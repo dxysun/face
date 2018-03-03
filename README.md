@@ -1,2 +1,5 @@
 # 基于人脸检测识别的飞机游戏大战
-django
+required:
+django==1,8.4
+pymysql
+requests

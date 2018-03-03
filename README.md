@@ -1,4 +1,8 @@
 # 基于人脸检测识别的飞机游戏大战
+开发语言：python
+
+开发框架:django
+
 required:
 django==1.8.4
 

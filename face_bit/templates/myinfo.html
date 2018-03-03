@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}我的信息{% endblock %}
+
+{% block script %}
+<script>
+ function SetImage(ImgD, FitWidth, FitHeight) {
+            var image = new Image();
+            image.src = ImgD.src;
+            var rate = 1;
+            if (image.width > 0 && image.height > 0) {
+                if (image.width / image.height >= FitWidth / FitHeight) {
+                    if (image.width > FitWidth) {
+                        ImgD.width = FitWidth;
+                        rate = FitWidth / image.width;
+                        ImgD.height = (image.height * FitWidth) / image.width;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                } else {
+                    if (image.height > FitHeight) {
+                        ImgD.height = FitHeight;
+                        ImgD.width = (image.width * FitHeight) / image.height;
+                        rate = FitHeight / image.height;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                }
+            }
+            return rate;
+        }
+        function setCanvas(filepath,faces) {
+            var canvas = document.getElementById("myCanvas");
+            var ctx=canvas.getContext("2d");
+            var img2 = new Image();
+            img2.src = filepath;
+            img2.onload = function()
+            {
+                console.log(" canvas  widtgh:" + canvas.width + "  height:"+ canvas.height);
+                var rate = SetImage(img2,canvas.width,canvas.height);
+                ctx.fillStyle="	#DCDCDC";
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                var l = 0;
+                var t = 0;
+                if(img2.width == canvas.width)
+                {
+                    t = (canvas.height - img2.height)/2;
+                }
+                else if(img2.height == canvas.height)
+                {
+                    l = (canvas.width - img2.width)/2;
+                }
+                else
+                {
+                    t = (canvas.height - img2.height)/2;
+                    l = (canvas.width - img2.width)/2;
+                }
+                ctx.drawImage(img2,l,t,img2.width,img2.height);
+
+                console.log(" img2 natural widtgh:" + img2.naturalWidth + "  height:"+ img2.naturalHeight);
+                console.log(" img2  widtgh:" + img2.width + "  height:"+ img2.height);
+                if(faces != null && faces.length > 0)
+                {
+                    ctx.strokeStyle="#FF0000";
+                    for (var i = 0;i < faces.length;i ++)
+                    {
+                        var left = faces[i]['face_rectangle']['left'];
+                        var width = faces[i]['face_rectangle']['width'];
+                        var top = faces[i]['face_rectangle']['top'];
+                        var height = faces[i]['face_rectangle']['height'];
+                        ctx.strokeRect(left * rate + l,top * rate + t,width * rate,height * rate);
+                        if(faces[i]['face_name'] != null)
+                        {
+                            ctx.font = "15px Arial";
+                            ctx.fillStyle = "#FF0000";
+                            ctx.fillText(faces[i]['face_name'],left * rate + l,top * rate + t + height * rate + 15);
+                        }
+                    }
+                }
+            }
+        }
+        function getObjectURL(file) {
+            var url = null;
+            if (window.createObjectURL != undefined) { //
+                url = window.createObjectURL(file);
+            } else if (window.URL !== undefined) {
+                //仅简单的验证仅如下的浏览器支持 webkit or chrome ie11 ie10 firefox oprea
+                url = window.URL.createObjectURL(file);
+            } else if (window.webkitURL != undefined) { // webkit or chrome
+                url = window.webkitURL.createObjectURL(file);
+            }
+            return url;
+        }
+        function addfile(){
+            var file_info = $('#detectfile')[0].files[0];
+            //首先判断是否是图片
+            if(!/image\/\w+/.test(file_info.type)){
+                alert('上传的不是图片');
+                return false;
+            }
+            //在此限制图片的大小
+            var imgSize = file_info.size;
+            console.log(imgSize);
+
+            if(imgSize>2*1024*1024){
+                alert('上传的图片的大于2M,请重新选择');
+                $('#detectfile').val('')
+                return false;
+            }
+
+            var objUrl = getObjectURL(file_info);
+            setCanvas(objUrl);
+        }
+        $(function(){
+            $('#detectfile').bind('change',addfile);
+            var img_url = "{{ user.img_url }}";
+            console.log("img_url:" +img_url )
+            if(img_url == "" )
+            {
+                setCanvas("/static/detection.png");
+            }
+            else
+            {
+                var str = $("#face_info").text();
+                var face_info = JSON.parse(str);
+                setCanvas(img_url,face_info.faces);
+            }
+            $('#update_info').click(function(){
+
+                $('#update_info').text("更新中");
+                var form_data = new FormData();
+                var file_info = $('#detectfile')[0].files[0];
+                if(file_info != undefined)  //暂且不许要判断是否有附件
+                {
+                    form_data.append('detectfile',file_info);
+                }
+                form_data.append('update_type','myphoto');
+
+		        $.ajax({
+                    url:"{% url 'update_info' %}",
+                    type:'POST',
+                    data: form_data,
+                    processData: false,  // tell jquery not to process the data
+                    contentType: false, // tell jquery not to set contentType
+                    success: function(result) {
+                        console.log("数据: \n" + result.status);
+			            if(result.status == "success")
+			            {
+			                setCanvas(result.img_url, result.faces);
+                            $('#update_info').text("更新成功");
+			            }
+			            else
+                        {
+                            alert(result.error_message);
+                        }
+                    }
+                });
+
+            });
+
+            var is_confirm = false;
+            $('#repeat_pw').change(function(){
+                var password = $('#new_pw').val();
+                var confirm_pw = $('#repeat_pw').val();
+                console.log(password);
+                console.log(confirm_pw);
+                if(password != confirm_pw)
+                {
+                    $('#show_error').show();
+                    $('#update_password').attr("disabled","disabled");
+                }
+                else
+                {
+                    $('#show_error').hide();
+                    $('#update_password').removeAttr("disabled");
+                }
+                is_confirm = true;
+            });
+            $('#new_pw').change(function(){
+                if(is_confirm)
+                {
+                    var password = $('#new_pw').val();
+                    var confirm_pw = $('#repeat_pw').val();
+                    console.log(password);
+                    console.log(confirm_pw);
+                    if(password != confirm_pw)
+                    {
+                        $('#show_error').show();
+                        $('#update_password').attr("disabled","disabled");
+                    }
+                    else
+                    {
+                        $('#show_error').hide();
+                        $('#update_password').removeAttr("disabled");
+                    }
+                }
+
+            });
+            $('#update_password').click(function(){
+                var origin_pw = $('#origin_pw').val();
+                var new_pw = $('#new_pw').val();
+                $.post("{% url 'update_info' %}",{
+			            origin_pw: origin_pw,
+			            new_pw: new_pw,
+			            update_type: 'password'
+		            },
+		            function(data,status){
+			            console.log("数据: \n" + data.status + "\n状态: " + status);
+			            if(data.status == "success")
+			            {
+                            $("#update_password").text("更新成功");
+                            $('#pw_error').hide();
+			            }
+			            else
+			            {
+                            $('#pw_error').show();
+			            }
+		        });
+
+            });
+        });
+
+</script>
+
+
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">我的信息</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">我的信息</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <ul class="nav nav-tabs">
+  <li class="active"><a href="#home" data-toggle="tab">个人信息</a></li>
+  <li><a href="#profile" data-toggle="tab">密码</a></li>
+</ul>
+
+<div class="row">
+  <div class="col-md-4">
+    <br>
+    <div id="myTabContent" class="tab-content">
+      <div class="tab-pane active in" id="home">
+          <form id="tab" enctype="multipart/form-data" method="post">
+              <canvas id="myCanvas"  width="500" height="500">
+                                您的浏览器不支持 HTML5 canvas 标签。
+              </canvas>
+
+              <div class="form-group">
+                  <label >更新个人照片文件</label>
+                  <input type="file" id="detectfile" name="detectfile" accept="image/*">
+                  <p class="help-block">
+                      图片要求：JPG(JPEG)，PNG；图片文件不大于2 MB.
+                  </p>
+              </div>
+              <p id="face_info" style="display:none">{{ user.remark }}</p>
+              <div class="form-group">
+                  <label>用户名</label>
+                  <label  class="form-control">{{ user.username }}</label>
+                  <!--<input id="username" name="username" type="text" value="{{ user.username }}" class="form-control" disabled>-->
+              </div>
+               <div class="btn-toolbar list-toolbar">
+                    <button type="button" id="update_info" class="btn btn-primary"><i class="fa fa-save"></i> 更新我的照片</button>
+                </div>
+          </form>
+      </div>
+
+      <div class="tab-pane fade" id="profile">
+
+        <form id="tab2">
+          <div class="form-group">
+            <label>原密码</label>
+            <input type="password" id="origin_pw" class="form-control" required>
+          </div>
+            <div class="form-group">
+            <label>新密码</label>
+            <input type="password" id="new_pw" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>再次输入新密码</label>
+            <input type="password" id="repeat_pw" class="form-control" required>
+            <font id="show_error" style="display:none;" color="#FF0000">两次密码不一致</font>
+          </div>
+          <div>
+              <button type="button" id="update_password" class="btn btn-primary">更新密码</button>
+              <font id="pw_error" style="display:none;" color="#FF0000">原密码错误</font>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+

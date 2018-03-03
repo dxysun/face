@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}人脸识别{% endblock %}
+
+{% block script %}
+<script>
+        function SetImage(ImgD, FitWidth, FitHeight) {
+            var image = new Image();
+            image.src = ImgD.src;
+            var rate = 1;
+            if (image.width > 0 && image.height > 0) {
+                if (image.width / image.height >= FitWidth / FitHeight) {
+                    if (image.width > FitWidth) {
+                        ImgD.width = FitWidth;
+                        rate = FitWidth / image.width;
+                        ImgD.height = (image.height * FitWidth) / image.width;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                } else {
+                    if (image.height > FitHeight) {
+                        ImgD.height = FitHeight;
+                        ImgD.width = (image.width * FitHeight) / image.height;
+                        rate = FitHeight / image.height;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                }
+            }
+            return rate;
+        }
+        function setCanvas(filepath,faces) {
+            var canvas = document.getElementById("myCanvas");
+            var ctx=canvas.getContext("2d");
+            var img2 = new Image();
+            img2.src = filepath;
+            img2.onload = function()
+            {
+                console.log(" canvas  widtgh:" + canvas.width + "  height:"+ canvas.height);
+                var rate = SetImage(img2,canvas.width,canvas.height);
+                ctx.fillStyle="	#DCDCDC";
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                var l = 0;
+                var t = 0;
+                if(img2.width == canvas.width)
+                {
+                    t = (canvas.height - img2.height)/2;
+                }
+                else if(img2.height == canvas.height)
+                {
+                    l = (canvas.width - img2.width)/2;
+                }
+                else
+                {
+                    t = (canvas.height - img2.height)/2;
+                    l = (canvas.width - img2.width)/2;
+                }
+                ctx.drawImage(img2,l,t,img2.width,img2.height);
+
+                console.log(" img2 natural widtgh:" + img2.naturalWidth + "  height:"+ img2.naturalHeight);
+                console.log(" img2  widtgh:" + img2.width + "  height:"+ img2.height);
+                if(faces != null && faces.length > 0)
+                {
+                    ctx.strokeStyle="#FF0000";
+                    for (var i = 0;i < faces.length;i ++)
+                    {
+                        var left = faces[i]['face_rectangle']['left'];
+                        var width = faces[i]['face_rectangle']['width'];
+                        var top = faces[i]['face_rectangle']['top'];
+                        var height = faces[i]['face_rectangle']['height'];
+                        ctx.strokeRect(left * rate + l,top * rate + t,width * rate,height * rate);
+                        ctx.font = "15px Arial";
+                        ctx.fillStyle = "#FF0000";
+                        ctx.fillText(faces[i]['face_name'],left * rate + l,top * rate + t + height * rate + 15);
+                    }
+                }
+            }
+        }
+        function getObjectURL(file) {
+            var url = null;
+            if (window.createObjectURL != undefined) { //
+                url = window.createObjectURL(file);
+            } else if (window.URL !== undefined) {
+                //仅简单的验证仅如下的浏览器支持 webkit or chrome ie11 ie10 firefox oprea
+                url = window.URL.createObjectURL(file);
+            } else if (window.webkitURL != undefined) { // webkit or chrome
+                url = window.webkitURL.createObjectURL(file);
+            }
+            return url;
+        }
+        function addfile(){
+            var file_info = $('#detectfile')[0].files[0];
+            //首先判断是否是图片
+            if(!/image\/\w+/.test(file_info.type)){
+                alert('上传的不是图片');
+                return false;
+            }
+            //在此限制图片的大小
+            var imgSize = file_info.size;
+            console.log(imgSize);
+
+            if(imgSize>2*1024*1024){
+                alert('上传的图片的大于2M,请重新选择');
+                $('#detectfile').val('')
+                return false;
+            }
+
+            var objUrl = getObjectURL(file_info);
+            setCanvas(objUrl);
+        }
+        $(function(){
+
+            $('#detectfile').bind('change',addfile);
+
+            $('#fileupload').click(function(){
+                var form_data = new FormData();
+                var file_info = $('#detectfile')[0].files[0];
+                if(file_info == undefined)  //暂且不许要判断是否有附件
+                {
+                    alert('你没有选择任何文件');
+                    return false
+                }
+                $("#face_info_more").hide();
+                $("#more_faces").html("");
+                $('#result').text("识别中");
+                // 提交ajax的请求
+                console.log("ajax start");
+                form_data.append('detectfile',file_info);
+                form_data.append('detect_type','recognize');
+                $.ajax({
+                    url:"{% url 'upload' %}",
+                    type:'POST',
+                    data: form_data,
+                    processData: false,  // tell jquery not to process the data
+                    contentType: false, // tell jquery not to set contentType
+                    success: function(result) {
+                        if(result['status'] != "failed")
+                        {
+                            $('#result').text("识别完成");
+                            var objStr = JSON.stringify(result, null, 4);
+                            var html = objStr.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp');
+                            if(result["error_message"] != null)
+                            {
+                                $('#result').html(html);
+                            }
+                            else
+                            {
+                               // $('#result').html(html);
+                                var faces = result['faces'];
+                                setCanvas(result['filepath'],faces);
+
+                                var face_names = "";
+                                for (var i = 0;i < faces.length;i ++)
+                                {
+                                    face_names += faces[i]['face_name'] + " ";
+                                }
+                                console.log("face_names " + face_names);
+                                $("#more_faces").html("识别出" + faces.length + "张人脸，分别为<br><br>" + face_names);
+                                $("#face_info_more").show();
+                            }
+                        }
+                        else
+                        {
+                            alert(result['error_message']);
+                        }
+                    }
+                });
+
+            });
+            setCanvas("/static/detection.png");
+        });
+    </script>
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">人脸识别</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">人脸识别</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <p class="panel-heading">人脸识别</p>
+                <div class="panel-body">
+                        <div class="col-sm-1 col-md-1">
+                        </div>
+                        <div class="col-sm-5 col-md-5">
+                            <form enctype="multipart/form-data" action="{% url 'upload' %}" method="post">
+
+                            <canvas id="myCanvas"  width="500" height="500">
+                                您的浏览器不支持 HTML5 canvas 标签。
+                            </canvas>
+
+                            <div class="form-group">
+                                <label >选择文件</label>
+                                <input type="file" id="detectfile" name="detectfile" accept="image/*" >
+                                <p class="help-block">
+                                    图片要求：JPG(JPEG)，PNG；图片文件不大于2 MB.
+                                </p>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="fileupload">识别</button>
+                        </form>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <p class="panel-heading">人脸识别结果</p>
+                <div class="panel-body">
+                <div class="col-sm-7 col-md-7">
+                    <p id="result"></p>
+                    <div id="face_info_more" style="display:none">
+                        <h2 id="more_faces" >识别出几张人脸，分别为</h2>
+                    </div>
+                </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+

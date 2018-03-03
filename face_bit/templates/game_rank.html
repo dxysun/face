@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}积分榜{% endblock %}
+
+
+
+{% block header %}
+    <h1 class="page-title">积分榜</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li>人脸检测飞机大战</li>
+        <li class="active">积分榜</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+        </div>
+        <div class="col-sm-6 col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading no-collapse"><h3>人脸检测飞机游戏大战积分榜前{{ game_length }}名<span class="label label-danger">您的最高分为{{ user_score }},位于第{{ user_rank }}名</span></h3></div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>用户名</th>
+                    <th>分数</th>
+                    <th>时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for game in game_score %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ game.username }}</td>
+                    <td>{{ game.score }}</td>
+                    <td>{{ game.date_score }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+
+

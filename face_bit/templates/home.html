@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}主页{% endblock %}
+
+
+
+{% block header %}
+    <h1 class="page-title">主页</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">主页</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <a href="#widget1container" class="panel-heading" data-toggle="collapse">人脸检测 </a>
+                <div id="widget1container" class="panel-body collapse in">
+                    <h2>人脸检测应用</h2>
+                    <p>在人脸检测界面你需要上传照片，系统会识别照片中的人脸</p>
+                    <p>在人脸检测中你也可以标记人脸用于后续的人脸识别</p>
+                    <p>我们还给予人脸检测做了一个游戏——人脸检测飞机大战</p>
+                    <p>在人脸检测飞机大战中用人脸控制飞机去摧毁敌机吧！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <a href="#widget2container" class="panel-heading" data-toggle="collapse">人脸识别 </a>
+                <div id="widget2container" class="panel-body collapse in">
+                    <h2>人脸识别应用</h2>
+                    <p>在人脸识别界面你需要上传要识别的照片</p>
+                    <p>照片中的人脸只有提前标记过才会被识别哦！</p>
+                    <p>在人脸摄像头识别中可以识别你自己哦，但前提是你上传了自己的美照</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+

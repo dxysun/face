@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/static/js/jquery.min.js"></script>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/static/js/bootstrap.js"></script>
+    <title>face</title>
+</head>
+<script>
+    $(function(){
+
+        $('#send_message').click(function () {
+            //如果未连接到websocket
+            if (!window.s) {
+                alert("websocket未连接.");
+            } else {
+             //   window.s.send($('#message').val());//通过websocket发送数
+              {% comment %}  var data = aCanvas.toDataURL('image/jpeg', 1.0);
+             var newblob = dataURItoBlob(data);
+             window.s.send(newblob);{% endcomment %}
+             /*   console.log('websocket   send');
+                if(aVideo.src){
+                    console.log('websocket   send  in if');
+                    socket.send(aCanvas.toDataURL("image/jpeg", 0.5));
+               }*/
+            }
+        });
+        $('#close_websocket').click(function () {
+            if (window.s) {
+                window.s.close();//关闭websocket
+                console.log('websocket已关闭');
+            }
+        });
+
+    });
+
+</script>
+<body>
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-5">
+      <ul class="nav nav-pills">
+          <li role="presentation" class="active"><a href="{% url 'index' %}">Home</a></li>
+          <li role="presentation"><a href="{% url 'detect' %}">人脸检测</a></li>
+          <li role="presentation"><a href="{% url 'test' %}">人脸检测飞机大战</a></li>
+          <li role="presentation"><a href="{% url 'socket' %}">人脸摄像头识别</a></li>
+          <li role="presentation"><a href="{% url 'recognition' %}">人脸识别</a></li>
+      </ul>
+    </div>
+    <div class="col-md-3">
+        <ul class="nav nav-pills">
+            <li role="presentation"><a href="">登录</a></li>
+            <li role="presentation"><a href="">注册</a></li>
+        </ul>
+    </div>
+
+</div>
+<br>
+<br>
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+    <video id ="live" width ="320" height ="240" style="display:none" autoplay > </video>
+    <canvas  width ="320" id ="canvas" height ="240" style ="display:none;"> </canvas>
+
+    <canvas  width ="320" id ="imgcanvas" height ="240" style ="display:inline;"> </canvas>
+    <img id="receiver" style="width:320px;height:240px;display:none"/>
+    </div>
+    <div class="col-md-4"></div>
+</div>
+<div style="display:none">
+    <input type="text" id="message" value="Hello, World!"/>
+
+    <button type="button" id="send_message">发送 message</button>
+    <button type="button" id="close_websocket">关闭 websocket</button>
+</div>
+
+</body>
+<script type="text/javascript">
+    var aVideo=document.getElementById('live');
+    var aCanvas=document.getElementById('canvas');
+    var ctx=aCanvas.getContext('2d');
+    var face_times = 10;
+    var imgcanvas = document.getElementById('imgcanvas');
+    var imgctx = imgcanvas.getContext('2d');
+    navigator.getUserMedia  = navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;//获取媒体对象（这里指摄像头）
+    navigator.getUserMedia({video:true}, gotStream, noStream);//参数1获取用户打开权限；参数二成功打开后调用，并传一个视频流对象，参数三打开失败后调用，传错误信息
+
+    function gotStream(stream) {
+        aVideo.src = URL.createObjectURL(stream);
+        aVideo.onerror = function () {
+            stream.stop();
+        };
+        stream.onended = noStream;
+        aVideo.onloadedmetadata = function () {
+            //    alert('摄像头成功打开！');
+        };
+    }
+    function noStream(err) {
+        alert(err);
+    }
+    function dataURItoBlob(dataURI) {
+        // convert base64/URLEncoded data component to raw binary data held in a string
+        var byteString;
+        if (dataURI.split(',')[0].indexOf('base64') >= 0)
+            byteString = atob(dataURI.split(',')[1]);
+        else
+            byteString = unescape(dataURI.split(',')[1]);
+
+        // separate out the mime component
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+        // write the bytes of the string to a typed array
+        var ia = new Uint8Array(byteString.length);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        return new Blob([ia], {type:mimeString});
+    }
+    if (window.s) {
+        window.s.close()
+    }
+    var draw = function(){
+
+      if(aVideo.src){
+            socket.send(aCanvas.toDataURL("image/jpeg", 0.5));
+        }
+        setTimeout(draw, 400);
+    };
+
+    var image = document.getElementById('receiver');
+    /*创建socket连接*/
+    var socket = new WebSocket("ws://" + window.location.host + "/video/");
+    socket.onopen = function () {
+        console.log('WebSocket open');//成功连接上Websocket
+        draw();
+    };
+    socket.onmessage = function (e) {
+        // console.log('message: ' + e.data);//打印出服务端返回过来的数据
+        facedata = JSON.stringify(e.data)
+        faces = facedata.split('#')
+        console.log('websocket faces[0]  recived  ' + faces[0]);
+        // console.log('websocket faces[1]  recived  ' + faces[1]);
+        var data = faces[0].substring(1).replace(/'/g,"\"");
+        // console.log('websocket data  ' + data);
+        var face = JSON.parse(data);
+
+
+       /*image.src=e.data;*/
+
+        var top = face['top'];
+        var bottom = face['bottom'];
+        var left = face['left'];
+        var right = face['right'];
+
+        imgpath = faces[1].substring(0,faces[1].length - 2)
+        var img2 = new Image();
+        img2.src = imgpath;
+        // img2.src = e.data;
+
+        img2.onload = function()
+        {
+           imgctx.drawImage(img2,0,0,img2.width,img2.height)
+           // imgctx.drawImage(img2,left,top,right - left,bottom - top)
+           imgctx.strokeStyle="#FF0000";
+           imgctx.strokeRect(left,top,right - left,bottom - top);
+           imgctx.font="15px Arial";
+           imgctx.fillStyle="#FF0000";
+           imgctx.fillText(face['name'],left,bottom + 15);
+           if(face['name'] != "Unknown")
+           {
+                face_times ++;
+           }
+           else
+           {
+                face_times --;
+           }
+           if(face_times == 20)
+           {
+               alert("认证成功");
+               window.location.href = "{% url 'detect' %}";
+           }
+           if(face_times == 0)
+           {
+               alert("认证失败，请重新认证");
+               face_times = 10;
+           }
+
+        };
+
+    };
+    // Call onopen directly if socket is already open
+    if (socket.readyState == WebSocket.OPEN) socket.onopen();
+    window.s = socket;
+
+    timer = setInterval(
+        function () {
+            ctx.drawImage(aVideo, 0, 0, 320, 240);
+            //    var data = aCanvas.toDataURL('image/jpeg', 1.0);
+            //    var newblob = dataURItoBlob(data);
+            //    window.s.send(newblob);
+        }, 50);
+</script>
+</html>

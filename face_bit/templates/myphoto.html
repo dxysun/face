@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}我的照片{% endblock %}
+
+
+
+{% block header %}
+    <h1 class="page-title">我的照片</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">我的照片</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="panel panel-default">
+    <p class="panel-heading">未标记照片</p>
+    <div class="panel-body gallery">
+        {% for img in not_remark %}
+           <a href="{% url 'face_result' %}?id={{ img.id }}"><img src="{{ img.img_url }}" class="img-polaroid"  width="140" height="140"></a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <p class="panel-heading">已标记照片</p>
+    <div class="panel-body gallery">
+        {% for img in remark %}
+        <a href="{% url 'face_result' %}?id={{ img.id }}"><img src="{{ img.img_url }}" title="{{ img.img_label }}" class="img-polaroid"  width="140" height="140"></a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <p class="panel-heading">已识别照片</p>
+    <div class="panel-body gallery">
+        {% for img in recognize %}
+        <a href="{% url 'face_result' %}?id={{ img.id }}"><img src="{{ img.img_url }}" title="{{ img.img_label }}" class="img-polaroid" width="140" height="140"></a>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+
+

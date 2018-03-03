@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}历史成绩{% endblock %}
+
+
+
+{% block header %}
+    <h1 class="page-title">历史成绩</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li>人脸检测飞机大战</li>
+        <li class="active">历史成绩</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+        </div>
+        <div class="col-sm-6 col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading no-collapse"><h3>您在人脸检测飞机游戏中的历史成绩</h3></div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>分数</th>
+                    <th>时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                 {% for user in user_score %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.score }}</td>
+                    <td>{{ user.date_score }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+
+

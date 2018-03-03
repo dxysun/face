@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}人脸检测飞机大战{% endblock %}
+
+
+{% block header %}
+    <h1 class="page-title">人脸检测飞机大战</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">飞机大战</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="row" id="show_info" style="display:none">
+    <div class="col-sm-4 col-md-4">
+    </div>
+    <div class="col-sm-4 col-md-4">
+       <h2> <span class="label label-success">您的最终分数是<label id="final_score"></label></span></h2>
+    </div>
+    <div class="col-sm-3 col-md-3">
+        <h2><button type="button" class="btn btn-danger" id="restart">重新开始</button></h2>
+    </div>
+</div>
+<br>
+    <div class="row" >
+    <div class="col-sm-3 col-md-3">
+        <canvas id="inputCanvas" width="320" height="240" ></canvas>
+        <div>
+            <h2>游戏说明</h2>
+            <p>
+                用你的人脸去控制飞机去消灭敌机
+            </p>
+            <p>
+                空格键用于暂停,消灭不同的敌机可分别获得100,300或500分
+            </p>
+            <p>
+                游戏的困难程度分为三个等级：开始是level 1,　达到5000分后是level 2,　达到10000分后是level 3
+            </p>
+　　　　　　　<h2>当前积分榜前{{ length }}名</h2>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>用户名</th>
+                    <th>分数</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for score in game_score %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ score.username }}</td>
+                    <td>{{ score.score }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-sm-9 col-md-9">
+
+    <video id="inputVideo" autoplay loop style="display:none"></video>
+
+    <canvas id="canvas"></canvas>
+    </div>
+
+    </div>
+<script type="text/javascript">
+
+    var videoInput = document.getElementById('inputVideo');
+    var canvasInput = document.getElementById('inputCanvas');
+    var ctx = canvasInput.getContext("2d");
+    ctx.strokeStyle="#FF0000";
+    var htracker = new headtrackr.Tracker();
+    htracker.init(videoInput, canvasInput);
+    htracker.start();
+    console.log("videoInput    width: " + videoInput.width + " height: " + videoInput.height);
+    /* document.addEventListener('facetrackingEvent',
+        function (event) {
+           //     console.log("position  x: " + event.x + "  y:" + event.y + "  width: " + event.width + " height: " + event.height);
+          //  ctx.strokeRect(event.x - 45,event.y - 45,event.width,event.height);
+        }
+    );*/
+    var game;
+    window.onload = function(){
+				//禁用移动端浏览器页面的上下拖拽
+				document.body.addEventListener('touchmove',function(e){e.preventDefault()},false);
+				//开始游戏
+				game = new GameStart();
+			}
+	$("#restart").click(function(){
+	    location.reload();
+	/*    $("#show_info").hide();
+	    $("#final_score").text("");
+	    game.restart();*/
+
+	});
+</script>
+{% endblock %}
+
+
+

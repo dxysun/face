@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}人脸检测识别结果{% endblock %}
+
+{% block script %}
+<script>
+        function SetImage(ImgD, FitWidth, FitHeight) {
+            var image = new Image();
+            image.src = ImgD.src;
+            var rate = 1;
+            if (image.width > 0 && image.height > 0) {
+                if (image.width / image.height >= FitWidth / FitHeight) {
+                    if (image.width > FitWidth) {
+                        ImgD.width = FitWidth;
+                        rate = FitWidth / image.width;
+                        ImgD.height = (image.height * FitWidth) / image.width;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                } else {
+                    if (image.height > FitHeight) {
+                        ImgD.height = FitHeight;
+                        ImgD.width = (image.width * FitHeight) / image.height;
+                        rate = FitHeight / image.height;
+                    } else {
+                        ImgD.width = image.width;
+                        ImgD.height = image.height;
+                    }
+                }
+            }
+            return rate;
+        }
+        function setCanvas(filepath,faces) {
+            var canvas = document.getElementById("myCanvas");
+            var ctx=canvas.getContext("2d");
+            var img2 = new Image();
+            img2.src = filepath;
+            img2.onload = function()
+            {
+                console.log(" canvas  widtgh:" + canvas.width + "  height:"+ canvas.height);
+                var rate = SetImage(img2,canvas.width,canvas.height);
+                ctx.fillStyle="	#DCDCDC";
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                var l = 0;
+                var t = 0;
+                if(img2.width == canvas.width)
+                {
+                    t = (canvas.height - img2.height)/2;
+                }
+                else if(img2.height == canvas.height)
+                {
+                    l = (canvas.width - img2.width)/2;
+                }
+                else
+                {
+                    t = (canvas.height - img2.height)/2;
+                    l = (canvas.width - img2.width)/2;
+                }
+                ctx.drawImage(img2,l,t,img2.width,img2.height);
+
+                console.log(" img2 natural widtgh:" + img2.naturalWidth + "  height:"+ img2.naturalHeight);
+                console.log(" img2  widtgh:" + img2.width + "  height:"+ img2.height);
+                if(faces != null && faces.length > 0)
+                {
+                    ctx.strokeStyle="#FF0000";
+                    for (var i = 0;i < faces.length;i ++)
+                    {
+                        var left = faces[i]['face_rectangle']['left'];
+                        var width = faces[i]['face_rectangle']['width'];
+                        var top = faces[i]['face_rectangle']['top'];
+                        var height = faces[i]['face_rectangle']['height'];
+                        ctx.strokeRect(left * rate + l,top * rate + t,width * rate,height * rate);
+                        if(faces[i]['face_name'] != null)
+                        {
+                            ctx.font = "15px Arial";
+                            ctx.fillStyle = "#FF0000";
+                            ctx.fillText(faces[i]['face_name'],left * rate + l,top * rate + t + height * rate + 15);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        $(function(){
+
+            $("#remark").click(function(){
+                var label = $("#label").val();
+                if(label != "")
+                {
+                    var img_id = {{ img.id }};
+                    $("#remark").text("处理中");
+                    $.post("{% url 'remark_photo' %}",{
+			            label: label,
+			            img_id: img_id
+		            },
+		            function(data,status){
+			            console.log("数据: \n" + data.status + "\n状态: " + status);
+			            if(data.status == "success")
+			            {
+                            $("#remark").text("标记成功");
+			            }
+		            });
+                }
+
+            });
+            $("#recognize").click(function(){
+                var img_id = {{ img.id }};
+                $("#recognize").text("处理中");
+                $.post("{% url 'recognize_again' %}",{
+			        img_id: img_id
+		        },
+		        function(data,status){
+			        console.log("数据: \n" + data.status + "\n状态: " + status);
+			            if(data.status == "success")
+			            {
+                            $("#recognize").text("识别成功");
+                            var faces = data['faces'];
+                            setCanvas(data['filepath'],faces);
+
+                            var face_names = "";
+                            for (var i = 0;i < faces.length;i ++)
+                            {
+                                face_names += faces[i]['face_name'] + " ";
+                            }
+                            $("#more_faces").html("识别出" + faces.length + "张人脸，分别为<br><br>" + face_names);
+                            $("#face_info_more").show();
+			            }
+		            });
+
+            });
+            var str = $("#face_info").text();
+            var face_info = JSON.parse(str);
+            console.log(face_info.faces);
+            {% if img.img_type == 1 %}
+                 face_info.faces[0].face_name = "{{ img.img_label }}";
+            {% endif %}
+
+            var faces = face_info.faces;
+            if(faces.length != 0 )
+            {
+                 $("#img_id").val(result['img_id']);
+                 setCanvas("{{img.img_url}}",face_info.faces);
+                 if(faces.length > 1)
+                 {
+                      $("#more_faces").html("识别出" + faces.length + "张人脸，分别为<br><br>{{img.img_label}}");
+                      $('#face_info_more').show();
+                 }
+                 else
+                 {
+                      $('#label').val("{{ img.img_label }}");
+                      $('#face_info_one').show();
+                 }
+            }
+        });
+    </script>
+
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">人脸检测标记</h1>
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">Home</a> </li>
+        <li class="active">人脸检测标记</li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <p class="panel-heading">
+                    {% if img.img_type == 0 %}
+                        未标记人脸
+                    {% elif img.img_type == 1 %}
+                        已标记人脸
+                    {% else %}
+                    　  已识别人脸
+                    {% endif %}
+                </p>
+                <div class="panel-body">
+                        <div class="col-sm-1 col-md-1">
+                        </div>
+                        <div class="col-sm-11 col-md-11">
+                            <form enctype="multipart/form-data" action="{% url 'upload' %}" method="post">
+
+                            <canvas id="myCanvas"  width="500" height="500">
+                                您的浏览器不支持 HTML5 canvas 标签。
+                            </canvas>
+                        </form>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="panel panel-default">
+                <p class="panel-heading">
+                    {% if img.img_type == 2 %}
+                        人脸识别结果
+                    {% else %}
+                    　  人脸检测结果(图片中只存在一张人脸可以进行标记，多张人脸不可标记)
+                    {% endif %}
+                </p>
+                <div class="panel-body">
+                <div class="col-sm-7 col-md-7">
+                    <p id="result"></p>
+                    <div id="face_info_more" style="display:none">
+                        <h2 id="more_faces" >Here's a Tip</h2>
+                        <button id="recognize" class="btn btn-primary">重新识别</button>
+                    </div>
+                    <p id="face_info" style="display:none">{{ img.remark }}</p>
+                    <div id="face_info_one" style="display:none">
+                        <h2 id="one_face" >检测到1张人脸（你可以进行重新标记）</h2>
+                        <div class="form-group">
+                            <label>图中的人脸是</label>
+                            <input id="label" type="text" class="form-control">
+                        </div>
+                        <button id="remark" class="btn btn-primary">重新标记</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+

@@ -77,6 +77,7 @@
                     <input type="password" class="form-controlspan12 form-control" id="password" required>
                 </div>
                 <button type="submit" id="login_submit" class="btn btn-primary pull-left">登录</button>
+                <a class="btn btn-primary pull-left" href="{% url 'visitor_login' %}">游客访问</a>
                 <a class="btn btn-primary pull-right" href="{% url 'register' %}">注册</a>
                 <label class="remember-me" id="show_error" style="display:none;"><font color="#FF0000">用户名或密码错误</font></label>
                 <div class="clearfix"></div>

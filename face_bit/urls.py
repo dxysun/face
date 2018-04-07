@@ -32,4 +32,5 @@ urlpatterns = [
     url(r'^upload/$', views.upload_file, name="upload"),
     url(r'^test/$', views.test, name="test"),
     url(r'^socket/$', views.mysocket, name="socket"),
+    url(r'^visitor_login/$', views.visitor_login, name="visitor_login"),
 ]

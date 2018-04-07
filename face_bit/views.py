@@ -13,7 +13,7 @@ from .models import user_info, image_info, game_info
 
 def check_session(request):
     username = request.session.get("username", None)
-    print("check_session " + str(username))
+    # print("check_session " + str(username))
     if username is None:
         return False
     else:
@@ -91,6 +91,22 @@ def register(request):
     return render(request, 'register.html')
 
 
+def visitor_login(request):
+    count = user_info.objects.count()
+    username = "visitor" + str(count)
+    password = "123456"
+    user = user_info(username=username, password=password)
+    user.save()
+    path = "D:\\workSpace\\PythonWorkspace\\face\\face_bit/static/userinfo/user" + str(user.id) + "/"
+    print("path:" + path)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    info = face.face_create(username, "face_game_users")
+    request.session["username"] = username
+    request.session["userid"] = user.id
+    return redirect("/face/")
+
+
 def register_finished(request):
     username = request.POST.get("username", None)
     password = request.POST.get("password", None)
@@ -104,7 +120,7 @@ def register_finished(request):
     info = face.face_create(username, "face_game_users")
     if info.get("status") == "success":
         print("crate face success")
-    return redirect("/face/login/")
+    return redirect("/face/")
 
 
 def recognition(request):

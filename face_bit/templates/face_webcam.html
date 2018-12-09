@@ -122,8 +122,8 @@
     };
     socket.onmessage = function (e) {
         // console.log('message: ' + e.data);//打印出服务端返回过来的数据
-        facedata = JSON.stringify(e.data)
-        faces = facedata.split('#')
+        facedata = JSON.stringify(e.data);
+        faces = facedata.split('#');
         console.log('websocket faces[0]  recived  ' + faces[0]);
         // console.log('websocket faces[1]  recived  ' + faces[1]);
         var data = faces[0].substring(1).replace(/'/g,"\"");

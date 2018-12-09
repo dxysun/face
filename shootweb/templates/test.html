@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-theme.css">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/echarts.js"></script>
+    <script src="/static/js/echarts-gl.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: 'ECharts 入门示例'
+                },
+                tooltip: {},
+                legend: {
+                    data: ['销量']
+                },
+                xAxis: {
+                    data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+                },
+                yAxis: {},
+                series: [{
+                    name: '销量',
+                    type: 'bar',
+                    data: [5, 20, 36, 10, 10, 20]
+                }]
+            };
+
+            var getDayTime = function () {
+                var temp = [];
+                for (var i = 0; i < 500; i++) {
+                    var hour = i;
+                    temp.push(hour);
+                }
+                return temp;
+            };
+
+            var getRandomData = function (val) {
+                var temp = [];
+                for (var i = 0; i < 500; i++) {
+                    var item = Math.random() * 100 - Math.random() * 50;
+                    temp.push(item.toFixed(0));
+                }
+
+                return temp;
+            };
+            var myoption = {
+                color: [
+                    '#66CCFF',
+                    '#CC6666',
+                    '#66CCCC',
+                    '#FF9999',
+                    '#26A69A',
+                    '#6200EA'
+                ],
+                title: {
+                    text: 'test',
+                    top: 5
+                },
+                grid: [{
+                    top: '9%',
+                    bottom: 0,
+                    left: '5%',
+                    right: '5%',
+                    height: '35%'
+                },
+                    {
+                        top: '50%',
+                        bottom: 0,
+                        left: '5%',
+                        right: '5%',
+                        height: '35%'
+                    }
+                ],
+
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                legend: {
+                    data: ['右2', '右4'],
+                    top: 5
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params) {
+                        if (params instanceof Array) {
+                            var idxMap = [{
+                                text: '占比',
+                                data: []
+                            }];
+                            var time = params[0].axisValue;
+                            for (var i = 0; i < params.length; i++) {
+                                var seriesIdx = params[i].seriesId.split(
+                                    params[i].seriesId[0]
+                                );
+                                idxMap[seriesIdx[2]].data.push({
+                                    marker: params[i].marker,
+                                    seriesName: params[i].seriesName,
+                                    data: params[i].data
+                                });
+                            }
+
+                            return (
+                                '<div>' +
+                                '<time>' +
+                                time +
+                                '</time>' +
+                                '<br />' +
+                                idxMap.map(function (item) {
+                                    return (
+                                        '<span>' +
+                                        item.text +
+                                        '</span>' +
+                                        item.data
+                                            .map(function (i_item) {
+                                                return (
+                                                    '<p style="margin: 0;padding: 0;">' +
+                                                    i_item.marker +
+                                                    i_item.seriesName +
+                                                    ': ' +
+                                                    i_item.data +
+                                                    '</p>'
+                                                );
+                                            })
+                                            .join('')
+                                    );
+                                })
+                                    .join('')
+                                +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        gridIndex: 0,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: getDayTime(),
+                        //show: false,
+                        boundaryGap: true
+                    },
+                    {
+                        type: 'category',
+                        gridIndex: 1,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: getDayTime(),
+                        //show: false,
+                        boundaryGap: true
+                    }
+                ],
+                yAxis: [
+
+                    {
+                        name: '右2',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 0,
+                        inverse: false,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    },
+
+                    {
+                        name: '右4',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 1,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        position: 'left',
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    }
+                ],
+                dataZoom: [{
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    start: 50,
+                    end: 100
+                },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                series: [
+
+                    {
+                        name: '右2',
+                        type: 'line',
+                        xAxisIndex: 0,
+                        data: getRandomData(),
+                        yAxisIndex: 0,
+                        symbol: 'none',
+                        smooth: true
+                    },
+
+                    {
+                        name: '右4',
+                        type: 'line',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: getRandomData(),
+                        symbol: 'none',
+                        smooth: true,
+                        barWidth: 2
+                    }
+                ]
+            };
+            var data = [];
+            var x_data =
+                "-287.59,-253.34,-193.07,-194.83,-194.85,-195.06,-152.6,-242.37,35.65,56.22,41.24,34.37,-311.74,-318.37,-330.47,-334.17,-331.76,-328.0,-327.55,-332.41,-330.27,-327.79,-318.52,-313.45,-308.26,-306.78,-303.93,-302.51,-298.55,-299.55,-297.6,-296.54,-294.64,-294.83,-295.73,-294.06,-151.65,-234.32,-233.7,-234.35,-232.8,-232.2,-235.29,-231.86,-229.0,-230.75,-228.61,-225.46,-216.74,-214.33,-208.92,-204.31,-203.59,-205.29,-204.99,-204.77,-204.76,-205.26,-153.57,-148.19,-153.18,-195.18,-195.03,-197.08,-197.09,-198.25,-200.29,-199.77,-203.66,-204.04,-204.04,-199.61,-196.09,-191.2,-182.97,-178.16,-172.68,-159.42,-153.91,-149.65,-145.09,-144.65,-141.38,-138.09,-137.05,-136.99,-134.7,-136.85,-136.1,-79.36,-130.9,-129.9,-128.73,-128.54,-127.12,-128.89,-130.1,-134.32,-134.81,-135.26,-132.94,-132.95,-127.76,-121.96,-115.83,-111.41,-107.82,-98.09,-96.33,-94.88,-92.42,-87.76,-83.28,-82.13,-80.23,-79.79,36.74,-17.49,-16.06,-14.53,-13.44,-14.09,-12.45,-11.43,-13.39,-14.69,-16.21,-17.12,-16.17,-15.85,-13.66,-11.19,-0.55,2.16,4.35,4.11,1.82,0.99,2.06,2.09,1.9,3.39,2.37,4.32,3.26,3.2,3.38,5.81,7.76,10.69,13.04,14.92,18.93,22.04,23.29,20.11,17.03,15.14,11.85,9.36,8.45,7.14,5.81,4.43"
+            ;
+            var y_data =
+                "180.97,132.83,6.52,11.52,16.04,19.02,111.99,147.04,31.36,44.51,34.54,26.95,-24.29,-23.64,-14.07,-11.34,-14.48,-11.15,12.91,25.89,31.78,29.24,18.34,6.97,3.75,5.42,6.05,7.52,9.43,12.98,16.55,15.27,15.27,15.03,16.71,16.31,-223.7,-54.79,-52.5,-56.52,-59.71,-58.95,-54.0,-51.54,-45.56,-37.32,-31.76,-27.82,-14.99,-13.25,-10.01,-10.24,-10.83,-10.23,-9.41,-8.64,-10.27,-11.84,-112.37,-116.57,-113.82,0.65,3.76,1.47,0.36,2.34,1.29,-0.4,-1.23,-3.81,-3.81,-5.04,-9.09,-14.71,-14.26,-14.7,-20.18,-14.61,-8.27,-2.74,-3.73,-4.53,-4.03,-3.26,-3.56,-3.59,-4.66,-3.54,-6.57,-122.87,-1.0,-0.09,-0.39,-2.3,-2.76,-1.66,-2.29,-6.07,-9.21,-10.46,-11.94,-13.41,-16.44,-17.57,-16.51,-14.23,-15.49,-10.46,-6.63,-3.23,0.59,4.19,8.07,9.3,6.7,6.78,-157.36,-8.13,0.36,-0.85,-1.09,-2.2,-8.04,-10.9,-10.43,-10.45,-10.89,-8.3,-8.41,-8.87,-10.47,-10.41,-4.69,1.62,4.78,2.27,-0.79,-2.72,0.11,3.87,5.25,7.07,6.79,11.15,10.89,11.9,14.86,14.96,20.58,26.54,31.98,35.65,38.92,38.97,36.41,27.88,26.07,25.34,24.49,25.86,28.23,30.55,35.23,40.05"
+            ;
+            var z_data =
+                "1207.83,1205.63,1160.73,1156.43,1143.85,1146.04,1059.6,1051.37,862.25,859.99,865.7,863.59,923.59,925.48,917.08,917.85,915.94,925.08,919.79,926.33,921.86,924.44,929.46,943.2,937.85,934.34,924.29,937.45,930.56,928.92,927.78,931.16,931.04,926.79,928.62,923.45,937.42,914.56,905.55,908.51,901.34,892.83,896.08,885.17,868.33,873.62,865.7,852.99,833.02,829.04,821.36,809.19,813.93,820.14,813.14,812.16,812.09,814.64,806.71,804.02,823.67,785.59,785.66,787.41,787.28,784.93,787.78,780.26,787.25,790.13,790.13,780.05,771.52,776.38,760.86,753.87,749.68,737.21,718.16,711.64,703.14,708.5,705.53,696.18,705.2,704.4,700.36,705.5,706.16,717.31,695.34,698.72,698.99,695.96,692.59,691.47,691.6,698.46,700.96,696.92,692.05,698.51,693.74,690.55,678.32,669.8,672.53,660.77,659.76,655.07,650.85,643.22,630.72,636.96,635.85,641.27,645.31,607.53,602.63,596.3,602.94,602.69,602.77,600.21,601.44,602.84,597.14,602.0,602.71,601.59,602.5,597.82,583.54,583.18,573.25,579.69,585.48,584.33,581.48,580.66,578.87,580.07,587.83,591.54,590.73,593.89,592.87,595.62,602.84,588.38,585.27,589.7,592.24,583.12,588.46,591.8,595.12,597.49,601.37,605.52,604.37,602.1,604.77,604.7"
+            ;
+// Parametric curve
+            var xd = x_data.split(",");
+            var yd = y_data.split(",");
+            var zd = z_data.split(",");
+
+            for (var t = 0; t < xd.length; t += 1) {
+                var x = xd[t];
+                var y = yd[t];
+                var z = zd[t];
+                data.push([x, y, z]);
+            }
+            console.log(data.length);
+
+            var option_3d = {
+                tooltip: {},
+                backgroundColor: '#fff',
+                visualMap: {
+                    show: false,
+                    dimension: 2,
+                    min: 0,
+                    max: 30,
+                    inRange: {
+                        color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                    }
+                },
+                xAxis3D: {
+                    type: 'value'
+                },
+                yAxis3D: {
+                    type: 'value'
+                },
+                zAxis3D: {
+                    type: 'value'
+                },
+                grid3D: {
+                    viewControl: {
+                        projection: 'orthographic'
+                    }
+                },
+                series: [{
+                    type: 'line3D',
+                    data: data,
+                    lineStyle: {
+                        width: 4
+                    },
+                    smooth: true
+                }]
+            };
+
+            data = [];
+            for (i = 0; i < 1; i++) {
+                data[i] = [];
+            }
+
+            for (i = 0; i <= 360 * 10; i++) {
+                t = i / 180 * Math.PI;
+                data[0].push([Math.cos(t * 1 / 2), i % 360]);
+                {% comment %}     data[1].push([Math.cos(t * 2 / 3), i % 360]);
+                     data[2].push([Math.cos(t * 3 / 4), i % 360]);
+                     data[3].push([Math.cos(t * 4 / 5), i % 360]);
+                     data[4].push([Math.cos(t * 5 / 6), i % 360]);
+                     data[5].push([Math.cos(t * 6 / 7), i % 360]);
+                     data[6].push([Math.cos(t * 7 / 8), i % 360]);
+                     data[7].push([Math.cos(t * 8 / 9), i % 360]);
+                     data[8].push([Math.cos(t * 2 / 1), i % 360]);
+                     data[9].push([Math.cos(t * 3 / 2), i % 360]);
+                     data[10].push([Math.cos(t * 4 / 3), i % 360]);
+                     data[11].push([Math.cos(t * 5 / 4), i % 360]);
+                     data[12].push([Math.cos(t * 6 / 5), i % 360]);
+                     data[13].push([Math.cos(t * 7 / 6), i % 360]);
+                     data[14].push([Math.cos(t * 8 / 7), i % 360]);
+                     data[15].push([Math.cos(t * 9 / 8), i % 360]);{% endcomment %}
+            }
+            var title = [];
+            title.push("ρ=sin(θ*1/2)");
+            {% comment %}  title.push("ρ=sin(θ*2/3)");
+              title.push("ρ=sin(θ*3/4)");
+              title.push("ρ=sin(θ*4/5)");
+              title.push("ρ=sin(θ*5/6)");
+              title.push("ρ=sin(θ*6/7)");
+              title.push("ρ=sin(θ*7/8)");
+              title.push("ρ=sin(θ*8/9)");
+              title.push("ρ=sin(θ*2/1)");
+              title.push("ρ=sin(θ*3/2)");
+              title.push("ρ=sin(θ*4/3)");
+              title.push("ρ=sin(θ*5/4)");
+              title.push("ρ=sin(θ*6/5)");
+              title.push("ρ=sin(θ*7/6)");
+              title.push("ρ=sin(θ*8/7)");
+              title.push("ρ=sin(θ*9/8)");{% endcomment %}
+
+            var polar = [];
+            var angleAxis = [];
+            var radiusAxis = [];
+            var series = [];
+
+            for (var i = 0; i < data.length; i++) {
+                polar.push({
+                    center: [15 + 24 * (i % 4) + '%', (15 + 24 * Math.floor(i / 4)) + '%'],
+                    radius: '16%'
+                });
+                angleAxis.push({
+                    polarIndex: i,
+                    type: 'value',
+                    startAngle: 0
+                });
+                radiusAxis.push({
+                    show: false,
+                    polarIndex: i,
+                    min: 0
+                });
+                series.push({
+                    polarIndex: i,
+                    coordinateSystem: 'polar',
+                    name: title[i],
+                    type: 'line',
+                    showSymbol: false,
+                    label: {
+                        normal: {
+                            show: true,
+                            position: 'bottom'
+                        }
+                    },
+                    data: data[i]
+                });
+            }
+
+
+            var option_polar = {
+                title: {
+                    text: "极坐标曲线图",
+                    subtext: 'data-visual.cn',
+                    sublink: 'http://data-visual.cn',
+                    x: 'center'
+                },
+                polar: polar,
+                tooltip: {
+                    show: false
+                },
+                angleAxis: angleAxis,
+                radiusAxis: radiusAxis,
+                series: series,
+                animationDuration: 2000
+            };
+
+            var r_pos = "10.52,10.72,11.0,10.27,9.86";
+            var p_pos = "0.0,180.0,0.0,245.66,212.75";
+
+            var data1 = [];
+
+
+            r_pos = r_pos.split(",");
+            p_pos = p_pos.split(",");
+            for (i = 0; i < r_pos.length; i++) {
+                data1.push([r_pos[i], p_pos[i]]);
+            }
+
+            var options_bar = {
+                title: {
+                    text: '射击数据图示',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} : {c}'
+                },
+                legend: {
+                    data: ['射击点'],
+                    top: 40
+                },
+                polar: {
+                    radius: 170
+                },
+                angleAxis: {
+                    type: 'value',
+                    startAngle: 0,
+                    minInterval: 30,
+                    maxInterval: 30,
+                    interval: 30,
+                    splitNumber: 12,
+                    max: 360
+
+                },
+                radiusAxis: {
+                    //     axisAngle: 90,
+                    min: 7,
+                    max: 11,
+                    interval: 1,
+                    inverse: true
+                },
+                {% comment %}  dataZoom: [
+                      {
+                          type: 'slider',
+                          radiusAxisIndex: 0,
+                          bottom: 40,
+                          start: 0,
+                          end: 100
+                      },
+                      {
+                          type: 'inside',
+                          radiusAxisIndex: 0,
+                          start: 0,
+                          end: 100
+                      }
+                  ],{% endcomment %}
+                series: [{
+                    coordinateSystem: 'polar',
+                    // FIXME
+                    // 现在必须得设置这个，能不能polar和catesian一样，要不然很多特殊处理。
+                    angleAxisIndex: 0,
+                    radiusAxisIndex: 0,
+                    name: '射击点',
+                    type: 'line',
+                    symbolSize: 5,
+                    data: data1,
+                    smooth: true
+                }]
+            };
+
+            var x_data_process = "2,3,5,3,7,5,7,3,8,4";
+            var y_data_process = "4,3,2,7,3,8,0,3,6,8";
+            var xDataPro = x_data_process.split(",");
+            var yDataPro = y_data_process.split(",");
+            var data_four = [];
+            {% comment %}       var l = xData.length;
+                   for (var t = 0; t < l; t++) {
+                       data_four.push([xData[t], yData[t]])
+                   }{% endcomment %}
+
+            var l = xDataPro.length;
+            for (t = 0; t < l; t++) {
+                data_four.push([xDataPro[t], yDataPro[t]])
+            }
+
+            var option_four = {
+
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: [{
+                    show: false,
+                    left: '0%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '40%'
+                }, {
+                    show: false,
+                    left: '20%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '40%'
+                }, {
+                    show: false,
+                    left: '40%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '40%'
+                }, {
+                    show: false,
+                    left: '60%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '40%'
+                }, {
+                    show: false,
+                    left: '80%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '40%'
+                }],
+                xAxis: [{
+                    gridIndex: 0,
+                    type: 'value'
+                }, {
+                    gridIndex: 1,
+                    type: 'value'
+                }, {
+                    gridIndex: 2,
+                    type: 'value'
+                }, {
+                    gridIndex: 3,
+                    type: 'value'
+                }, {
+                    gridIndex: 4,
+                    type: 'value'
+                }],
+                yAxis: [{
+                    gridIndex: 0,
+                    type: 'value'
+                }, {
+                    gridIndex: 1,
+                    type: 'value'
+                }, {
+                    gridIndex: 2,
+                    type: 'value'
+                }, {
+                    gridIndex: 3,
+                    type: 'value'
+                }, {
+                    gridIndex: 4,
+                    type: 'value'
+                }],
+                dataZoom: [{
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 0,
+                    yAxisIndex: 0,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 2,
+                    yAxisIndex: 2,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 3,
+                    yAxisIndex: 3,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 4,
+                    yAxisIndex: 4,
+                    start: 0,
+                    end: 100
+                }],
+                series: [{
+                    data: data_four,
+                    xAxisIndex: 0,
+                    yAxisIndex: 0,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: data_four,
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: data_four,
+                    xAxisIndex: 2,
+                    yAxisIndex: 2,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: data_four,
+                    xAxisIndex: 3,
+                    yAxisIndex: 3,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: data_four,
+                    xAxisIndex: 4,
+                    yAxisIndex: 4,
+                    type: 'line',
+                    smooth: true
+                }]
+            };
+
+           // var up_data_real = [[4, 0], [0, 4], [-4, 0], [0, -4], [4, 0]];
+            var up_data_real = [];
+            x_data =
+                "-3,-5,-6,-8,-9,-12,-13,-14,-21,-25,-27,-31,-33,-36,-38,-39,-41,-42,-43,-44,-46,-45,-45,-45,-45,-44,-43,-44,-43,-42,-41,-43,-45,-47,-48,-47,-48,-48,-48,-47,-52,-61,-64,-67,-70,-85,-100,-117,-127,-137,-154,-161,-168,-183,-188,-196,-200,-205,-208,-211,-212,-213,-214,-214,-214,-213,-212,-211,-210,-209,-208,-207,-207,-206,-206,-208,-210,-219,-228,-238,-241,-244,-249,-254,-259,-270,-274,-278,-292,-300,-306,-313,-318,-325,-329,-333,-341,-344,-346,-348,-352,-356,-357,-357,-357,-358,-359,-361,-362,-363,-365,-367,-374,-381,-386,-391,-396,-401,-409,-414,-418,-424,-430,-439,-444,-453,-457,-464,-469,-474,-480,-484,-488,-491,-494,-496,-498,-500,-501,-502,-503,-505,-506,-508,-509,-510,-515,-518,-528,-536,-541,-544,-550,-555,-561,-570,-576,-584,-590,-600,-606,-612,-619,-623,-629,-633,-638,-640,-644,-645,-647,-650,-652,-654,-655,-657,-659,-662,-670,-671,-680,-686,-690,-691,-693,-694,-697,-698,-700,-702,-704,-707,-708,-710,-712,-713,-712,-713,-712,-712,-711";
+            y_data =
+                "-6,-13,-20,-25,-31,-35,-40,-44,-47,-50,-52,-54,-55,-56,-58,-59,-61,-63,-66,-68,-71,-73,-74,-76,-77,-78,-79,-79,-79,-79,-78,-78,-77,-75,-75,-74,-73,-74,-95,-98,-100,-105,-104,-101,-94,-87,-84,-79,-76,-73,-70,-69,-67,-67,-68,-69,-72,-74,-76,-78,-80,-81,-83,-83,-83,-83,-83,-83,-82,-82,-83,-83,-84,-84,-86,-101,-110,-110,-116,-116,-113,-109,-105,-102,-99,-96,-93,-92,-91,-89,-86,-84,-83,-82,-82,-81,-81,-83,-83,-84,-85,-86,-87,-87,-87,-87,-85,-86,-85,-85,-101,-106,-104,-108,-108,-103,-99,-94,-91,-88,-87,-85,-84,-83,-84,-83,-84,-83,-84,-84,-84,-85,-86,-86,-88,-88,-87,-86,-87,-86,-86,-86,-85,-85,-86,-86,-105,-104,-105,-107,-102,-98,-94,-88,-85,-82,-80,-80,-79,-80,-79,-79,-79,-81,-81,-82,-83,-84,-84,-84,-85,-85,-85,-85,-85,-87,-87,-86,-85,-103,-121,-139,-157,-156,-154,-152,-149,-147,-145,-144,-145,-144,-144,-143,-142,-138,-134,-126,-119,-109,-99";
+            x_data = x_data.split(",");
+            y_data = y_data.split(",");
+            for(i = 0;i < x_data.length;i ++){
+                up_data_real.push([x_data[i],y_data[i]]);
+            }
+
+            var option_up_shake_real = {
+              {% comment %}  polar: {
+                    radius: 130,
+                    center: ['40%', '40%']
+                },
+                angleAxis: {
+                    type: 'value',
+                    startAngle: 0,
+                    minInterval: 30,
+                    maxInterval: 30,
+                    interval: 30,
+                    splitNumber: 12,
+                    max: 360,
+                    inverse: true
+
+                },
+                radiusAxis: {
+                    //     axisAngle: 90,
+                    min: 8,
+                    max: 11,
+                    interval: 1,
+                    inverse: true
+                },{% endcomment %}
+                xAxis: {
+                    type: 'value'
+
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                 series: [{
+                     data: up_data_real,
+                     silent: true,
+                     type: 'line',
+                     smooth: true,
+                     tooltip:{
+                         show: false
+                     }
+                 }]
+            };
+
+            var option_test = {
+                series: [
+                    {
+                        name: '测试曲线一',
+                        data: [[
+                            970.2634887695312,
+                            916.5289306640625
+                        ],
+                            [
+                                955.5230102539062,
+                                1085.013427734375
+                            ],
+                            [
+                                911.7494506835938,
+                                1248.3785400390625
+                            ],
+                            [
+                                840.2728271484375,
+                                1401.66064453125
+                            ],
+                            [
+                                743.2649536132812,
+                                1540.2022705078125
+                            ],
+                            [
+                                623.6734008789062,
+                                1659.7939453125
+                            ],
+                            [
+                                485.1317138671875,
+                                1756.8017578125
+                            ],
+                            [
+                                331.84967041015625,
+                                1828.2783203125
+                            ],
+                            [
+                                168.48452758789062,
+                                1872.052001953125
+                            ],
+                            [
+                                -4.2411564209032804e-05,
+                                1886.79248046875
+                            ],
+                            [
+                                -168.4844970703125,
+                                1872.052001953125
+                            ],
+                            [
+                                -331.8496398925781,
+                                1828.2783203125
+                            ],
+                            [
+                                -485.1318054199219,
+                                1756.8017578125
+                            ],
+                            [
+                                -623.6734008789062,
+                                1659.7939453125
+                            ],
+                            [
+                                -743.2649536132812,
+                                1540.202392578125
+                            ],
+                            [
+                                -840.2728271484375,
+                                1401.6607666015625
+                            ],
+                            [
+                                -911.7494506835938,
+                                1248.378662109375
+                            ],
+                            [
+                                -955.5230102539062,
+                                1085.0135498046875
+                            ],
+                            [
+                                -970.2634887695312,
+                                916.5288696289062
+                            ],
+                            [
+                                -955.5230102539062,
+                                748.04443359375
+                            ],
+                            [
+                                -911.7494506835938,
+                                584.6792602539062
+                            ],
+                            [
+                                -840.2728271484375,
+                                431.397216796875
+                            ],
+                            [
+                                -743.2650146484375,
+                                292.8555908203125
+                            ],
+                            [
+                                -623.6732788085938,
+                                173.26385498046875
+                            ],
+                            [
+                                -485.13165283203125,
+                                76.25604248046875
+                            ],
+                            [
+                                -331.8495788574219,
+                                4.7794189453125
+                            ],
+                            [
+                                -168.4844512939453,
+                                -38.994140625
+                            ],
+                            [
+                                1.1570276001293678e-05,
+                                -53.73455810546875
+                            ],
+                            [
+                                168.4844512939453,
+                                -38.99407958984375
+                            ],
+                            [
+                                331.849609375,
+                                4.77947998046875
+                            ],
+                            [
+                                485.13165283203125,
+                                76.25604248046875
+                            ],
+                            [
+                                623.6732788085938,
+                                173.263916015625
+                            ],
+                            [
+                                743.2648315429688,
+                                292.85546875
+                            ],
+                            [
+                                840.2727661132812,
+                                431.3970031738281
+                            ],
+                            [
+                                911.7493896484375,
+                                584.6790771484375
+                            ],
+                            [
+                                955.5230712890625,
+                                748.044677734375
+                            ],
+                            [
+                                970.2634887695312,
+                                916.5291137695312
+                            ]],
+                        // sampling: 'average', //以优化模式显示
+                        type: 'line'
+                    }
+                ],
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'value'
+                }
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option_up_shake_real);
+
+
+        });
+
+    </script>
+</head>
+<body>
+<div class="row">
+    <div class="col-md-12">
+
+        <div id="main" style="width: 100%;height:600px;"></div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}运动员数据分析{% endblock %}</title>
+    <!-- Bootstrap Styles-->
+    <link href="/static/assets/css/bootstrap.css" rel="stylesheet"/>
+    <!-- FontAwesome Styles-->
+    <link href="/static/assets/css/font-awesome.css" rel="stylesheet"/>
+    <!-- Custom Styles-->
+    <link href="/static/assets/css/custom-styles.css" rel="stylesheet"/>
+    <!-- Google Fonts-->
+    {#    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'/>#}
+
+    <link href="/static/assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet"/>
+
+    <script src="/static/js/echarts.js"></script>
+    <!-- jQuery Js -->
+    <script src="/static/assets/js/jquery-1.10.2.js"></script>
+
+    <script>
+
+        function set_user_info() {
+            console.log("data click");
+            $.post("{% url 'get_user_info' %}",
+                function (data, status) {
+                   //  console.log("status " + status);
+
+                    if (data.status == "success" && status == "success") {
+
+                        $("#user_div").empty();
+                        for (var i = 0; i < data.data.length; i++) {
+                            $("#user_div").append("<div class=\"radio\">\n" +
+                                "                            <label>\n" +
+                                "                                <input type=\"radio\" name=\"user\" id=\"user" + i + "\" value=\"" + data.data[i].id + "\" >" + data.data[i].user_name +
+                                "                            </label>\n" +
+                                "                        </div>")
+                        }
+                    }
+                    else {
+                        alert('数据获取出错')
+                    }
+
+                });
+        }
+
+        $(function () {
+            $("#switch_user2").click(function () {
+                var user = $("input[name='user']:checked").val();
+                console.log("user: " + user);
+                $("#user_id").val(user);
+                $("#switch_user_submit").submit();
+
+            })
+        })
+
+
+    </script>
+    {% block script %}
+
+
+    {% endblock %}
+</head>
+<body>
+<div id="wrapper">
+    <nav class="navbar navbar-default top-navbar" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><strong>运动员数据分析</strong></a>
+            <div id="sideNav" href=""><i class="fa fa-caret-right"></i></div>
+        </div>
+
+        <ul class="nav navbar-top-links navbar-right">
+
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                    <i class="fa fa-user fa-fw"></i>{{ user }} <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li>
+                        <a href="#" onclick="set_user_info()" id="switch_user1" data-toggle="modal"
+                           data-target="#myModal"><i
+                                class="fa fa-user fa-fw"></i> 切换用户</a>
+                        <!-- Button trigger modal -->
+
+                    </li>
+                    <li><a href="{% url 'login_admin' %}"><i class="fa fa-gear fa-fw"></i> 管理员</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="{% url 'shoot_logout' %}"><i class="fa fa-sign-out fa-fw"></i> 退出</a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-user -->
+            </li>
+            <!-- /.dropdown -->
+        </ul>
+    </nav>
+
+    <form id='switch_user_submit' action="{% url 'login' %}" method="post">
+        <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}"/>
+
+    </form>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">切换用户</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" id="user_div">
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="switch_user2" class="btn btn-primary">切换用户</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/. NAV TOP  -->
+    <nav class="navbar-default navbar-side" role="navigation">
+        <div class="sidebar-collapse">
+            {% block menu %}
+
+            {% endblock %}
+        </div>
+
+    </nav>
+    <!-- /. NAV SIDE  -->
+    <div id="page-wrapper">
+        {% block header %}
+            <div class="header">
+            </div>
+        {% endblock %}
+        <div id="page-inner">
+            {% block content %}
+
+            {% endblock %}
+            <footer><p>Made By <a href="http://dxysun.com/" target="_blank" title="dxy">dxysun</a></p></footer>
+        </div>
+    </div>
+
+
+</div>
+
+
+</div>
+<!-- /. PAGE INNER  -->
+</div>
+<!-- /. PAGE WRAPPER  -->
+</div>
+<!-- /. WRAPPER  -->
+<!-- JS Scripts-->
+
+<!-- Bootstrap Js -->
+<script src="/static/assets/js/bootstrap.min.js"></script>
+<!-- Metis Menu Js -->
+<script src="/static/assets/js/jquery.metisMenu.js"></script>
+<!-- Custom Js -->
+<script src="/static/assets/js/custom-scripts-main.js"></script>
+<!-- DATA TABLE SCRIPTS -->
+<script src="/static/assets/js/dataTables/jquery.dataTables.js"></script>
+<script src="/static/assets/js/dataTables/dataTables.bootstrap.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#dataTables-example').dataTable();
+    });
+</script>
+
+</body>
+</html>

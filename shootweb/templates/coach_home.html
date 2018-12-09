@@ -1,0 +1,113 @@
+{% extends 'base_shoot.html' %}
+
+{% block title %}运动员数据分析-教练主页{% endblock %}
+
+{% block script %}
+    <script src="/static/assets/js/pages/coach_home.js"></script>
+{% endblock %}
+{% block menu %}
+
+    <ul class="nav" id="main-menu">
+        <li>
+            <a class="active-menu" href="{% url 'coach_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+        </li>
+        <li>
+            <a href="{% url 'coach_sport_info' %}"><i class="fa fa-table"></i> 运动员列表</a>
+        </li>
+        <li>
+            <a href="{% url 'coach_game_info' %}"><i class="fa fa-qrcode"></i> 比赛数据</a>
+        </li>
+    </ul>
+
+{% endblock %}
+
+
+{% block header %}
+
+    <h1 class="page-header">
+        主界面
+    </h1>
+    <ol class="breadcrumb">
+        <li class="active">运动员整体数据分析</li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    比赛成绩统计
+                </div>
+                <div class="panel-body">
+                    <p>
+                        运动员近几场比赛的成绩统计：<br>
+                        运动员1：<br>
+                        平均成绩： 最好成绩： 最低成绩：<br>
+                        运动员2：<br>
+                        平均成绩： 最好成绩： 最低成绩：<br>
+                        运动员3：<br>
+                        平均成绩： 最好成绩： 最低成绩：<br>
+                        运动员4：<br>
+                        平均成绩： 最好成绩： 最低成绩：<br>
+
+                        <br><br>
+                        运动员...成绩稳定，且整体成绩较好<br>
+                        运动员...成绩稳定，但整体成绩较差，哪方面需要加强<br>
+                        运动员...成绩起伏大，哪方面需要加强<br>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    运动员成绩变化图
+                </div>
+                <div class="panel-body">
+                    <div id="myChart" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    比赛成绩分析
+                </div>
+                <div class="panel-body">
+                    <p> 经过运动员历史数据的综合分析，成绩主要与如图所示的几个因素有关<br>
+                        其中，呈正相关的是...<br>
+                        相关性最大的是<br>
+                        呈负相关的是...<br>
+                        相关性最大的是<br>
+                        <br>
+                        <br>
+                        取得好成绩的运动员数据范围如下<br>
+                        抖动范围<br>
+                        心率范围<br>
+
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩关系图
+                </div>
+                <div class="panel-body">
+                    <div id="relationship" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>教练界面</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-theme.css">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/echarts.js"></script>
+
+    <script>
+        $(function () {
+
+            var legendData = ['运动员1', '运动员2', '运动员3', '运动员4'];
+
+            var serieData = [];
+            var metaDate = [];
+            var xAxisData = [];
+            var Max = 600;
+            var Min = 400;
+            for (var k = 0; k < 4; k++) {
+                var data = [];
+                for (var j = 0; j <= 10; j++) {
+                    var Range = Max - Min;
+                    var Rand = Math.random();
+                    var num = Min + Math.round(Rand * Range); //四舍五入
+                    data.push([j, num.toFixed(2)]);
+                }
+                metaDate.push(data);
+            }
+            for (var p = 0; p < 10; p++) {
+                xAxisData.push(p + 1);
+            }
+            for (var v = 0; v < legendData.length; v++) {
+                var serie = {
+                    name: legendData[v],
+                    type: 'line',
+                    smooth: true,
+                    data: metaDate[v]
+                };
+                serieData.push(serie)
+            }
+
+
+            var option = {
+                title: {
+                    text: '运动员成绩变化图'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                    // triggerOn: 'mousemove',
+                    // triggerOn: 'none',
+                    // formatter: function (params) {
+                    //     return params.data[1].toFixed(0);
+                    // }
+                },
+                legend: {
+                    x: 'left',
+                    y: 'middle',
+                    orient: 'vertical',
+                    data: legendData
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true
+
+                },
+                grid: {
+                    left: '100px;',
+
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    name: '比赛场次',
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xAxisData
+                },
+                yAxis: {
+                    name: '比赛成绩',
+                    type: 'value'
+                },
+                series: serieData
+            };
+
+            var option_relationship = {
+                title: {
+                    textStyle: {
+                        fontSize: 34,
+                        fontStyle: 'normal',
+                        fontWeight: 'normal'
+                    },
+                    text: '成绩与其他因素关系图',
+                    x: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataView: {
+                            show: true,
+                            readOnly: true
+                        },
+                        magicType: {
+                            show: true,
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true
+                        },
+                        saveAsImage: {
+                            show: true
+                        }
+                    }
+                },
+                calculable: false,
+                xAxis: [{
+                    type: 'category',
+                    name: '相关因素',
+                    axisLabel: {
+                        interval: 0
+                    },
+                    data: ['手部', '肩部', '腰部', '臂部', '心率', '速射时间', '时间节奏', '紧张度', '放松度', '专注度', '疲劳程度'],
+
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: '相关系数'
+                }],
+                series: [{
+                    name: '相关系数',
+                    type: 'bar',
+                    data: [3.2, 2.4, 1.5, 2.8, 1.3, 0.4, 0.5, -1.3, 2, 3, -2.2],
+                    markPoint: {
+                        data: [{
+                            type: 'max',
+                            name: '最大值'
+                        }, {
+                            type: 'min',
+                            name: '最小值'
+                        }]
+                    }
+
+                }
+                ]
+            };
+
+            var sourceData = [{
+                name: '王小虎',
+                sales: 142.56,
+                services: 64.5
+            }, {
+                name: '王小明',
+                sales: 471.14,
+                services: 76.2
+            }, {
+                name: '王小乐',
+                sales: 42.1,
+                services: 34.8
+            }, {
+                name: '王小波',
+                sales: 63.2,
+                services: 97.4
+            }, {
+                name: '王小龙',
+                sales: 97.3,
+                services: 67.5
+            }, {
+                name: '王小宇',
+                sales: 782.1,
+                services: 37.7
+            }, {
+                name: '王小禾',
+                sales: 41.1,
+                services: 12.8
+            }];
+
+            var seriesData = sourceData.map(function (item, index, array) {
+                return {
+                    name: item['name'],
+                    value: [item['sales'], item['services']]
+                }
+            });
+
+            var computeServicesAvgLine = function () {
+                var sum = 0;
+                sourceData.forEach(function (item) {
+                    sum += item['services']
+                });
+                return sum / sourceData.length
+            };
+
+            var computeSalesAvgLine = function () {
+                var sum = 0;
+                sourceData.forEach(function (item) {
+                    sum += item['sales']
+                });
+                return sum / sourceData.length
+            };
+            var avg = {
+                servicesAvgLine: computeServicesAvgLine(),
+                salesAvgLine: computeSalesAvgLine()
+            };
+
+            var myChart = echarts.init(document.getElementById('myChart'));
+            var myRelationship = echarts.init(document.getElementById('relationship'));
+
+
+            myChart.setOption(option);
+            myRelationship.setOption(option_relationship);
+
+        });
+    </script>
+</head>
+<body>
+<div class="row">
+    <div class="col-md-4">
+    </div>
+    <div class="col-md-4">
+        <h3>
+            <ul class="nav nav-tabs">
+                <li role="presentation"><a href="main">运动员</a></li>
+                <li role="presentation" class="active"><a href="#">教练</a></li>
+            </ul>
+        </h3>
+    </div>
+    <div class="col-md-4">
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-2">
+
+    </div>
+    <div class="col-md-4">
+        <h3>运动员近几场比赛的成绩统计：<br>
+            运动员1：<br>
+            平均成绩： 最好成绩： 最低成绩：<br>
+            运动员2：<br>
+            平均成绩： 最好成绩： 最低成绩：<br>
+            运动员3：<br>
+            平均成绩： 最好成绩： 最低成绩：<br>
+            运动员4：<br>
+            平均成绩： 最好成绩： 最低成绩：<br>
+
+            <br><br>
+            运动员...成绩稳定，且整体成绩较好<br>
+            运动员...成绩稳定，但整体成绩较差，哪方面需要加强<br>
+            运动员...成绩起伏大，哪方面需要加强<br>
+        </h3>
+    </div>
+    <div class="col-md-4">
+        <div id="myChart" style="width: 100%;height:500%;"></div>
+    </div>
+    <div class="col-md-2">
+    </div>
+</div>
+
+<br>
+<div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-4">
+        <h3>经过运动员历史数据的综合分析，成绩主要与如图所示的几个因素有关<br>
+            其中，呈正相关的是...<br>
+            相关性最大的是<br>
+            呈负相关的是...<br>
+            相关性最大的是<br>
+            <br>
+            <br>
+            取得好成绩的运动员数据范围如下<br>
+            抖动范围<br>
+            心率范围<br>
+            速射时间<br>
+            时间节奏<br>
+            紧张度<br>
+            放松度<br>
+            专注度<br>
+            疲劳程度<br>
+        </h3>
+    </div>
+    <div class="col-md-4">
+        <div id="relationship" style="width: 100%;height:600%;"></div>
+    </div>
+    <div class="col-md-2">
+    </div>
+</div>
+
+
+
+</body>
+</html>

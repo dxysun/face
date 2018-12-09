@@ -1,0 +1,192 @@
+{% extends 'base_shoot.html' %}
+
+{% block title %}运动员数据分析-运动员主页{% endblock %}
+
+{% block script %}
+    <script src="/static/assets/laydate/laydate.js"></script>
+    <script>
+
+        //获取当前时间，格式YYYY-MM-DD
+        function getNowFormatDate() {
+            var date = new Date();
+            var seperator1 = "-";
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            return year + seperator1 + month + seperator1 + strDate;
+        }
+
+        $(function () {
+
+            //日期范围
+            laydate.render({
+                elem: '#date_select'
+                , range: true, value: "{{ date1 }} - {{ date2 }}"
+            });
+            $('#shoot_analyse').click(function () {
+                var number = "";
+                $('input:checkbox[name=shoot_report]:checked').each(function (k) {
+                    if (k == 0) {
+                        number = $(this).val();
+                    } else {
+                        number += ',' + $(this).val();
+                    }
+                });
+                if (number != "") {
+                    $('#report_id').val(number);
+                    $('#shoot_info').submit();
+                }
+                else {
+
+                    alert("请选择需要分析的数据项");
+                }
+
+            });
+            $('#shoot_select').click(function () {
+                if ($(this).text() == "全选") {
+                    $("[name = shoot_report]:checkbox").prop("checked", true);
+                    $('#shoot_select').text("全不选")
+                }
+                else {
+                    $("[name = shoot_report]:checkbox").prop("checked", false);
+                    $('#shoot_select').text("全选")
+                }
+            })
+
+            $('#select_date').click(function () {
+                var date_info = $('#date_select').val();
+                var date_range = date_info.split(" - ");
+                console.log(date_range[0]);
+                console.log(date_range[1]);
+                $('#date1').val(date_range[0]);
+                $('#date2').val(date_range[1]);
+                $('#date_info').submit();
+
+            })
+
+
+        });
+    </script>
+{% endblock %}
+{% block menu %}
+
+    <ul class="nav" id="main-menu">
+        <li>
+            <a href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+        </li>
+        {% comment %}        <li>
+            <a href="{% url 'sport_game_analyse' %}"><i class="fa fa-desktop"></i> 射击数据分析</a>
+        </li>{% endcomment %}
+        <li>
+            <a class="active-menu" href="{% url 'sport_game_history' %}"><i class="fa fa-qrcode"></i> 射击数据</a>
+        </li>
+    </ul>
+
+{% endblock %}
+
+
+{% block header %}
+
+    <h1 class="page-header">
+        射击数据
+    </h1>
+    <ol class="breadcrumb">
+        <li class="active">射击组数</li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Advanced Tables -->
+
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-md-4">
+                            射击数据
+                        </div>
+                        <div class="col-md-5">
+                        </div>
+                        <div class="col-md-3">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="#" id="shoot_select" class="btn btn-success">全选</a>
+                            <a href="#" id="shoot_analyse" class="btn btn-info">数据分析与统计</a>
+                            <form id="shoot_info" action="{% url 'sport_game_analyse' %}" method="post">
+                                <input id="report_id" name="report_id" value="" type="text" hidden="hidden">
+                            </form>
+                        </div>
+                        <div class="col-md-3">
+                        </div>
+                        <div class="col-md-4">
+                            {% comment %}<form class="form-inline">
+                                <div class="form-group">
+                                    <label for="date_select">日期选择：</label>
+                                    <input class="form-control" id="date_select" type="text" placeholder="yyyy-MM-dd">
+                                </div>
+                            </form>{% endcomment %}
+                            <form id="date_info" action="{% url 'sport_game_history' %}" method="post">
+                                <input id="date1" name="date1" value="" type="text" hidden="hidden">
+                                <input id="date2" name="date2" value="" type="text" hidden="hidden">
+                            </form>
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">日期选择：</span>
+                                <input class="form-control" id="date_select" type="text" placeholder="yyyy-MM-dd">
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <button id="select_date" class="btn btn-primary">筛选</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>选择</th>
+                                <th>时间</th>
+                                <th>地点</th>
+                                <th>具体射击时间</th>
+                                <th>开始时间</th>
+                                <th>结束时间</th>
+                                <th>备注</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for report in shoot_reports %}
+                                <tr class="gradeA">
+                                    <td>
+                                        <input name="shoot_report" type="checkbox" value="{{ report.id }}">
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'sport_game_analyse_id' %}?id={{ report.id }}">{{ report.shoot_date }}</a>
+                                    </td>
+                                    <td>北京射击馆</td>
+                                    <td>{{ report.shoot_time }}</td>
+                                    <td>{{ report.start_time }}</td>
+                                    <td>{{ report.end_time }}</td>
+                                    <td>5次射击一共{{ report.remark }}环</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Advanced Tables -->
+        </div>
+    </div>
+{% endblock %}
+

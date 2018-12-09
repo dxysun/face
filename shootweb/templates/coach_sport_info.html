@@ -1,0 +1,258 @@
+{% extends 'base_shoot.html' %}
+
+{% block title %}运动员数据分析-教练主页{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+{% block menu %}
+
+    <ul class="nav" id="main-menu">
+        <li>
+            <a href="{% url 'coach_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+        </li>
+        <li>
+            <a class="active-menu" href="{% url 'coach_sport_info' %}"><i class="fa fa-table"></i> 运动员列表</a>
+        </li>
+        <li>
+            <a href="{% url 'coach_game_info' %}"><i class="fa fa-qrcode"></i> 比赛数据</a>
+        </li>
+    </ul>
+
+{% endblock %}
+
+
+{% block header %}
+
+    <h1 class="page-header">
+        运动员信息表
+    </h1>
+    <ol class="breadcrumb">
+        <li class="active">运动员列表</li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Advanced Tables -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    运动员信息
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                            <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>最好成绩</th>
+                                <th>最坏成绩</th>
+                                <th>平均成绩</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="gradeA">
+                                <td><a href="sport_info_detail">运动员</a></td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="odd gradeX">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="even gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>Opera for Wii</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeC">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeC">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeC">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeA">
+                                <td>运动员</td>
+                                <td>男</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeX">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeX">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            <tr class="gradeU">
+                                <td>运动员</td>
+                                <td>女</td>
+                                <td>48</td>
+                                <td class="center">40</td>
+                                <td class="center">45</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+            <!--End Advanced Tables -->
+        </div>
+    </div>
+{% endblock %}
+
+
+

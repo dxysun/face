@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^shoot/', include('shootweb.urls')),
     url(r'^face/', include('face_bit.urls')),
 ]

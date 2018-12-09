@@ -1,0 +1,1779 @@
+{% extends 'base_shoot.html' %}
+
+{% block title %}运动员数据分析-运动员主页{% endblock %}
+
+{% block script %}
+    {#    <script src="/static/assets/js/pages/sport_game_analyse_id.js"></script>#}
+    <script>
+        $(function () {
+
+            var r_pos = "{{ r_pos }}";
+            var p_pos = "{{ p_pos }}";
+            r_pos = r_pos.split(",");
+            p_pos = p_pos.split(",");
+            var i = 0;
+            var data_circle = [];
+            for (i = 0; i < r_pos.length; i++) {
+                data_circle.push([r_pos[i], p_pos[i]]);
+            }
+            var option_grade_circle = {
+                title: {
+                    text: '射击数据图示',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} : {c}'
+                },
+                legend: {
+                    data: ['射击点'],
+                    top: 40
+                },
+                polar: {
+                    radius: 170
+                },
+                angleAxis: {
+                    type: 'value',
+                    startAngle: 0,
+                    minInterval: 30,
+                    maxInterval: 30,
+                    interval: 30,
+                    splitNumber: 12,
+                    max: 360,
+                    inverse: true
+
+                },
+                radiusAxis: {
+                    //     axisAngle: 90,
+                    min: 8,
+                    max: 11,
+                    interval: 1,
+                    inverse: true
+                },
+                series: [{
+                    coordinateSystem: 'polar',
+                    // FIXME
+                    // 现在必须得设置这个，能不能polar和catesian一样，要不然很多特殊处理。
+                    angleAxisIndex: 0,
+                    radiusAxisIndex: 0,
+                    name: '射击点',
+                    type: 'scatter',
+                    symbolSize: 5,
+                    data: data_circle
+                }]
+            };
+
+
+            var x_pos = "{{ x_pos }}";
+            var y_pos = "{{ y_pos }}";
+            x_pos = x_pos.split(",");
+            y_pos = y_pos.split(",");
+            var grade_data = [];
+            for (i = 0; i < x_pos.length; i++) {
+                grade_data.push([x_pos[i], y_pos[i]])
+            }
+            var x_center = 0;
+            var y_center = 0;
+            var r_10 = 50;
+            var r_9 = 90;
+            var r_8 = 130;
+            var circle_data_10 = [];
+            var circle_data_9 = [];
+            var circle_data_8 = [];
+            var x_10_start = x_center + r_10 * Math.cos(0);
+            var y_10_start = y_center + r_10 * Math.sin(0);
+            var x_9_start = x_center + r_9 * Math.cos(0);
+            var y_9_start = y_center + r_9 * Math.sin(0);
+            var x_8_start = x_center + r_8 * Math.cos(0);
+            var y_8_start = y_center + r_8 * Math.sin(0);
+            for (var angle = 0; angle < 360; angle += 10) {
+                var x1 = x_center + r_10 * Math.cos(angle * Math.PI / 180);
+                var y1 = y_center + r_10 * Math.sin(angle * Math.PI / 180);
+                var x2 = x_center + r_9 * Math.cos(angle * Math.PI / 180);
+                var y2 = y_center + r_9 * Math.sin(angle * Math.PI / 180);
+                var x3 = x_center + r_8 * Math.cos(angle * Math.PI / 180);
+                var y3 = y_center + r_8 * Math.sin(angle * Math.PI / 180);
+                circle_data_10.push([x1, y1]);
+                circle_data_9.push([x2, y2]);
+                circle_data_8.push([x3, y3]);
+            }
+            circle_data_10.push([x_10_start, y_10_start]);
+            circle_data_9.push([x_9_start, y_9_start]);
+            circle_data_8.push([x_8_start, y_8_start]);
+            var option_grade_pos = {
+                xAxis: {
+                    type: 'value',
+                    min: -130,
+                    max: 130
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value',
+                    min: -130,
+                    max: 130
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: grade_data,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: circle_data_10,
+                    type: 'line',
+                    smooth: true,
+                    tooltip: {
+                        show: false
+                    }
+                }, {
+                    data: circle_data_9,
+                    type: 'line',
+                    smooth: true,
+                    tooltip: {
+                        show: false
+                    }
+                }, {
+                    data: circle_data_8,
+                    type: 'line',
+                    smooth: true,
+                    tooltip: {
+                        show: false
+                    }
+                }]
+            };
+
+
+            var grade = "{{ grades }}";
+            var data_grade = grade.split(",");
+            var data_level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            var data_total = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            data_grade.forEach(function (item, index) {
+                data_total[Math.floor(item) - 1]++;
+            });
+            var option_total_grade = {
+                color: ['#3398DB'],
+                title: {
+                    left: 'center',
+                    text: '成绩统计图'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: [{
+                    type: 'category',
+                    name: '环数',
+                    data: data_level,
+                    axisTick: {
+                        alignWithLabel: true
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: '次数'
+                }],
+                series: [{
+                    name: '次数',
+                    type: 'bar',
+                    barWidth: '50%',
+                    data: data_total
+                }]
+            };
+
+
+            var data_index = [1, 2, 3, 4, 5];
+            var option_grade_line = {
+                title: {
+                    left: 'center',
+                    text: '成绩趋势走向图'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        animation: false
+                    }
+                },
+                legend: {
+                    data: ['射击成绩'],
+                    top: 25
+                },
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                grid: [{
+                    left: 40,
+                    right: 40
+                }, {
+                    left: 40,
+                    right: 40
+                }],
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    axisLine: {
+                        onZero: true
+                    },
+                    name: '次数',
+                    splitLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#fcc',
+                            width: 1
+                        }
+                    },
+                    data: data_index
+                }, {
+                    gridIndex: 1
+                }],
+                yAxis: [{
+                    type: 'value',
+                    max: 10,
+                    name: '环数',
+                    min: 5,
+                    interval: 1,
+                    splitLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#fcc',
+                            width: 2
+                        }
+                    }
+                }, {
+                    gridIndex: 1
+                }],
+                series: [{
+                    name: '射击成绩',
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: {
+                        normal: {
+                            color: '#f94427'
+                        }
+                    },
+                    data: data_grade
+                }]
+            };
+
+
+            var hearts = "{{ hearts }}";
+            var values = hearts.split(",");
+            var heart_index = [1, 2, 3, 4, 5, 6];
+            var option_heart = {
+                title: {
+                    text: '心率变化数据'
+                },
+                tooltip: {
+                    triggerOn: 'onmousemove',
+                    formatter: function (params) {
+                        return '次数: ' + params.name + '<br>心跳: ' + params.value + '次';
+                    }
+                },
+                xAxis: {
+                    boundaryGap: false,
+                    data: heart_index,
+                    axisLabel: {
+                        color: '#000000'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#BFBFBF'
+                        }
+                    }
+                },
+                yAxis: {
+                    min: 40,
+                    axisLabel: {
+                        color: '#000000'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#BFBFBF'
+                        }
+                    }
+                },
+                series: [{
+                    type: 'line',
+                    data: values,
+                    color: ['#2F42FF'],
+                    symbolSize: 10,
+                    label: {
+                        normal: {
+                            show: true//圆点上显示值
+                        }
+                    },
+                    markLine: {
+                        data: [{
+                            type: 'average',
+                            name: '平均值'
+                        }]
+                    }
+                }]
+            };
+
+
+            var x_data = "{{ x_data }}";
+            var y_data = "{{ y_data }}";
+            var xData = x_data.split(",");
+            var yData = y_data.split(",");
+            var len = xData.length;
+            var xAxisData = [];
+            var x_y_plus = [];
+            for (i = 0; i < len; i++) {
+                xAxisData.push(i + 1);
+                x_y_plus.push([xData[i],yData[i]])
+            }
+            var option_beside_shake_line = {
+                color: [
+                    '#66CCFF',
+                    '#CC6666',
+                    '#66CCCC',
+                    '#FF9999',
+                    '#26A69A',
+                    '#6200EA'
+                ],
+                title: {
+                    text: '枪的抖动图（经过累加处理的数据）',
+                    top: 5
+                },
+                grid: [{
+                    top: '9%',
+                    bottom: 0,
+                    left: '5%',
+                    right: '5%',
+                    height: '35%'
+                },
+                    {
+                        top: '50%',
+                        bottom: 0,
+                        left: '5%',
+                        right: '5%',
+                        height: '35%'
+                    }
+                ],
+
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                legend: {
+                    data: ['x方向', 'y方向'],
+                    top: 5
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params) {
+                        if (params instanceof Array) {
+                            var idxMap = [{
+                                text: '占比',
+                                data: []
+                            }];
+                            var time = params[0].axisValue;
+                            for (var i = 0; i < params.length; i++) {
+                                var seriesIdx = params[i].seriesId.split(
+                                    params[i].seriesId[0]
+                                );
+                                idxMap[seriesIdx[2]].data.push({
+                                    marker: params[i].marker,
+                                    seriesName: params[i].seriesName,
+                                    data: params[i].data
+                                });
+                            }
+
+                            return (
+                                '<div>' +
+                                '<time>' +
+                                time +
+                                '</time>' +
+                                '<br />' +
+                                idxMap.map(function (item) {
+                                    return (
+                                        '<span>' +
+                                        item.text +
+                                        '</span>' +
+                                        item.data
+                                            .map(function (i_item) {
+                                                return (
+                                                    '<p style="margin: 0;padding: 0;">' +
+                                                    i_item.marker +
+                                                    i_item.seriesName +
+                                                    ': ' +
+                                                    i_item.data +
+                                                    '</p>'
+                                                );
+                                            })
+                                            .join('')
+                                    );
+                                })
+                                    .join('')
+                                +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        gridIndex: 0,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    },
+                    {
+                        type: 'category',
+                        gridIndex: 1,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    }
+                ],
+                yAxis: [
+
+                    {
+                        name: 'x方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 0,
+                        inverse: false,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    },
+
+                    {
+                        name: 'y方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 1,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        position: 'left',
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    }
+                ],
+                dataZoom: [{
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    start: 0,
+                    end: 100
+                },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                series: [
+
+                    {
+                        name: 'x方向',
+                        type: 'line',
+                        xAxisIndex: 0,
+                        yAxisIndex: 0,
+                        data: xData,
+
+                        symbol: 'none',
+                        smooth: true
+                    },
+                    {
+                        name: 'y方向',
+                        type: 'line',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: yData,
+                        symbol: 'none',
+                        smooth: true,
+                        barWidth: 2
+                    }
+                ]
+            };
+
+
+            var x_data_ori = "{{ x_data_ori }}";
+            var y_data_ori = "{{ y_data_ori }}";
+            var xDataOri = x_data_ori.split(",");
+            var yDataOri = y_data_ori.split(",");
+            for(i = 0;i < yDataOri.length;i ++){
+                yDataOri[i] *= -1;
+            }
+            var option_beside_shake_ori = {
+                color: [
+                    '#66CCFF',
+                    '#CC6666',
+                    '#66CCCC',
+                    '#FF9999',
+                    '#26A69A',
+                    '#6200EA'
+                ],
+                title: {
+                    text: '枪的抖动图（原始数据)',
+                    top: 5
+                },
+                grid: [{
+                    top: '9%',
+                    bottom: 0,
+                    left: '5%',
+                    right: '5%',
+                    height: '35%'
+                },
+                    {
+                        top: '50%',
+                        bottom: 0,
+                        left: '5%',
+                        right: '5%',
+                        height: '35%'
+                    }
+                ],
+
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                legend: {
+                    data: ['x方向', 'y方向'],
+                    top: 5
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params) {
+                        if (params instanceof Array) {
+                            var idxMap = [{
+                                text: '占比',
+                                data: []
+                            }];
+                            var time = params[0].axisValue;
+                            for (var i = 0; i < params.length; i++) {
+                                var seriesIdx = params[i].seriesId.split(
+                                    params[i].seriesId[0]
+                                );
+                                idxMap[seriesIdx[2]].data.push({
+                                    marker: params[i].marker,
+                                    seriesName: params[i].seriesName,
+                                    data: params[i].data
+                                });
+                            }
+
+                            return (
+                                '<div>' +
+                                '<time>' +
+                                time +
+                                '</time>' +
+                                '<br />' +
+                                idxMap.map(function (item) {
+                                    return (
+                                        '<span>' +
+                                        item.text +
+                                        '</span>' +
+                                        item.data
+                                            .map(function (i_item) {
+                                                return (
+                                                    '<p style="margin: 0;padding: 0;">' +
+                                                    i_item.marker +
+                                                    i_item.seriesName +
+                                                    ': ' +
+                                                    i_item.data +
+                                                    '</p>'
+                                                );
+                                            })
+                                            .join('')
+                                    );
+                                })
+                                    .join('')
+                                +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        gridIndex: 0,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    },
+                    {
+                        type: 'category',
+                        gridIndex: 1,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    }
+                ],
+                yAxis: [
+
+                    {
+                        name: 'x方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 0,
+                        inverse: false,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    },
+
+                    {
+                        name: 'y方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 1,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        position: 'left',
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    }
+                ],
+                dataZoom: [{
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    start: 0,
+                    end: 100
+                },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                series: [
+
+                    {
+                        name: 'x方向',
+                        type: 'line',
+                        xAxisIndex: 0,
+                        data: xDataOri,
+                        yAxisIndex: 0,
+                        symbol: 'none',
+                        smooth: true,
+                        {% comment %} markLine: {
+                             data: [
+                                 {
+                                     name: 'Y 轴值为 10 的水平线',
+                                     yAxis: {{ x_average }}
+                                 }
+                             ]
+                         }{% endcomment %}
+
+                    },
+                    {
+                        name: 'y方向',
+                        type: 'line',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: yDataOri,
+                        symbol: 'none',
+                        smooth: true,
+                        barWidth: 2,
+                         markLine: {
+                             data: [
+                                 {
+                                     name: 'Y 轴值为 10 的水平线',
+                                     yAxis: {{ y_average }}
+                                 }
+                             ]
+                         }
+                    }
+                ]
+            };
+            var option_beside_shake_x_y_plus = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: x_y_plus,
+                    type: 'line',
+                    smooth: true
+                }]
+            };
+
+
+            var x_data_real = "{{ x_data_pos }}";
+            var y_data_real = "{{ y_data_pos }}";
+            var xDataReal = x_data_real.split(",");
+            var yDataReal = y_data_real.split(",");
+            var beside_data_real = [];
+            for (i = 0; i < xDataReal.length; i++) {
+                beside_data_real.push([xDataReal[i], yDataReal[i] * -1])
+            }
+            var option_beside_shake_pos = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: beside_data_real,
+
+                    type: 'line',
+                    smooth: true,
+                    {% comment %} markPoint: {
+                         data: [{
+
+                             value: '第一发',
+                             xAxis: 20,
+                             yAxis: 20
+                         }, {
+                             value: '第二发',
+                             xAxis: 60,
+                             yAxis: 50
+                         }, {
+                             value: '第三发',
+                             xAxis: 70,
+                             yAxis: 40
+                         }]
+                     }{% endcomment %}
+                }]
+            };
+
+
+            var x_up_data_ori = "{{ x_up_data_ori }}";
+            var y_up_data_ori = "{{ y_up_data_ori }}";
+            var xUpDataOri = x_up_data_ori.split(",");
+            var yUpDataOri = y_up_data_ori.split(",");
+            var up_len = xData.length;
+            var xUpAxisData = [];
+            for (i = 0; i < up_len; i++) {
+                xUpAxisData.push(i + 1);
+            }
+            var option_up_shake_ori = {
+                color: [
+                    '#66CCFF',
+                    '#CC6666',
+                    '#66CCCC',
+                    '#FF9999',
+                    '#26A69A',
+                    '#6200EA'
+                ],
+                title: {
+                    text: '枪的抖动图（原始数据)',
+                    top: 5
+                },
+                grid: [{
+                    top: '9%',
+                    bottom: 0,
+                    left: '5%',
+                    right: '5%',
+                    height: '35%'
+                },
+                    {
+                        top: '50%',
+                        bottom: 0,
+                        left: '5%',
+                        right: '5%',
+                        height: '35%'
+                    }
+                ],
+
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                legend: {
+                    data: ['x方向', 'y方向'],
+                    top: 5
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params) {
+                        if (params instanceof Array) {
+                            var idxMap = [{
+                                text: '占比',
+                                data: []
+                            }];
+                            var time = params[0].axisValue;
+                            for (var i = 0; i < params.length; i++) {
+                                var seriesIdx = params[i].seriesId.split(
+                                    params[i].seriesId[0]
+                                );
+                                idxMap[seriesIdx[2]].data.push({
+                                    marker: params[i].marker,
+                                    seriesName: params[i].seriesName,
+                                    data: params[i].data
+                                });
+                            }
+
+                            return (
+                                '<div>' +
+                                '<time>' +
+                                time +
+                                '</time>' +
+                                '<br />' +
+                                idxMap.map(function (item) {
+                                    return (
+                                        '<span>' +
+                                        item.text +
+                                        '</span>' +
+                                        item.data
+                                            .map(function (i_item) {
+                                                return (
+                                                    '<p style="margin: 0;padding: 0;">' +
+                                                    i_item.marker +
+                                                    i_item.seriesName +
+                                                    ': ' +
+                                                    i_item.data +
+                                                    '</p>'
+                                                );
+                                            })
+                                            .join('')
+                                    );
+                                })
+                                    .join('')
+                                +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        gridIndex: 0,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xUpAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    },
+                    {
+                        type: 'category',
+                        gridIndex: 1,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xUpAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    }
+                ],
+                yAxis: [
+
+                    {
+                        name: 'x方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 0,
+                        inverse: false,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    },
+
+                    {
+                        name: 'y方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 1,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        position: 'left',
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    }
+                ],
+                dataZoom: [{
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    start: 0,
+                    end: 100
+                },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                series: [
+
+                    {
+                        name: 'x方向',
+                        type: 'line',
+                        xAxisIndex: 0,
+                        data: xUpDataOri,
+                        yAxisIndex: 0,
+                        symbol: 'none',
+                        smooth: true
+                    },
+                    {
+                        name: 'y方向',
+                        type: 'line',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: yUpDataOri,
+                        symbol: 'none',
+                        smooth: true
+
+                    }
+                ]
+            };
+
+
+            var x_up_data = "{{ x_up_data }}";
+            var y_up_data = "{{ y_up_data }}";
+            var xUpData = x_up_data.split(",");
+            var yUpData = y_up_data.split(",");
+            var option_up_shake_line = {
+                color: [
+                    '#66CCFF',
+                    '#CC6666',
+                    '#66CCCC',
+                    '#FF9999',
+                    '#26A69A',
+                    '#6200EA'
+                ],
+                title: {
+                    text: '枪的抖动图（经过累加处理的数据）',
+                    top: 5
+                },
+                grid: [{
+                    top: '9%',
+                    bottom: 0,
+                    left: '5%',
+                    right: '5%',
+                    height: '35%'
+                },
+                    {
+                        top: '50%',
+                        bottom: 0,
+                        left: '5%',
+                        right: '5%',
+                        height: '35%'
+                    }
+                ],
+
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                legend: {
+                    data: ['x方向', 'y方向'],
+                    top: 5
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function (params) {
+                        if (params instanceof Array) {
+                            var idxMap = [{
+                                text: '占比',
+                                data: []
+                            }];
+                            var time = params[0].axisValue;
+                            for (var i = 0; i < params.length; i++) {
+                                var seriesIdx = params[i].seriesId.split(
+                                    params[i].seriesId[0]
+                                );
+                                idxMap[seriesIdx[2]].data.push({
+                                    marker: params[i].marker,
+                                    seriesName: params[i].seriesName,
+                                    data: params[i].data
+                                });
+                            }
+
+                            return (
+                                '<div>' +
+                                '<time>' +
+                                time +
+                                '</time>' +
+                                '<br />' +
+                                idxMap.map(function (item) {
+                                    return (
+                                        '<span>' +
+                                        item.text +
+                                        '</span>' +
+                                        item.data
+                                            .map(function (i_item) {
+                                                return (
+                                                    '<p style="margin: 0;padding: 0;">' +
+                                                    i_item.marker +
+                                                    i_item.seriesName +
+                                                    ': ' +
+                                                    i_item.data +
+                                                    '</p>'
+                                                );
+                                            })
+                                            .join('')
+                                    );
+                                })
+                                    .join('')
+                                +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        gridIndex: 0,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xUpAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    },
+                    {
+                        type: 'category',
+                        gridIndex: 1,
+                        position: 'bottom',
+                        axisLabel: {
+                            show: true
+                        },
+                        data: xUpAxisData,
+                        //show: false,
+                        boundaryGap: true
+                    }
+                ],
+                yAxis: [
+
+                    {
+                        name: 'x方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 0,
+                        inverse: false,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    },
+
+                    {
+                        name: 'y方向',
+                        type: 'value',
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        gridIndex: 1,
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        },
+                        position: 'left',
+                        nameLocation: 'center',
+                        nameGap: 30,
+                        nameRotate: -90
+                    }
+                ],
+                dataZoom: [{
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    start: 0,
+                    end: 100
+                },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                series: [
+
+                    {
+                        name: 'x方向',
+                        type: 'line',
+                        xAxisIndex: 0,
+                        yAxisIndex: 0,
+                        data: xUpData,
+                        symbol: 'none',
+                        smooth: true
+                    },
+                    {
+                        name: 'y方向',
+                        type: 'line',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: yUpData,
+                        symbol: 'none',
+                        smooth: true
+                    }
+                ]
+            };
+
+            var up_data_x_y_plus = [];
+            for(i = 0;i < up_len;i ++){
+                up_data_x_y_plus.push([xUpData[i],yUpData[i]]);
+            }
+            var option_up_shake_x_y_plus = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: up_data_x_y_plus,
+
+                    type: 'line',
+                    smooth: true
+                }]
+            };
+
+
+            var x_up_data_real = "{{ x_up_data_pos }}";
+            var y_up_data_real = "{{ y_up_data_pos }}";
+            var xUpDataReal = x_up_data_real.split(",");
+            var yUpDataReal = y_up_data_real.split(",");
+            var up_data_real = [];
+            for (i = 0; i < xUpDataReal.length; i++) {
+                up_data_real.push([xUpDataReal[i], yUpDataReal[i] * -1])
+            }
+            var option_up_shake_pos = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: up_data_real,
+
+                    type: 'line',
+                    smooth: true
+                }]
+            };
+
+            var merge_data = [];
+            for(i = 0;i < yData.length;i ++){
+                merge_data.push([xUpData[i],yData[i]]);
+            }
+            var option_shake_merge_info = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: merge_data,
+
+                    type: 'line',
+                    smooth: true
+                }]
+            };
+
+
+            {% comment %}        var x_data_process = "{{ x_data_process }}";
+                    var y_data_process = "{{ y_data_process }}";
+                    var xDataAll = x_data_process.split("#");
+                    var yDataAll = y_data_process.split("#");
+                    var len1 = xDataAll.length;
+                    var allInfo = [];
+                    for (var k = 0; k < len1; k++) {
+                        var xDataPro = xDataAll[k].split(",");
+                        var yDataPro = yDataAll[k].split(",");
+                        var data_four = [];
+                        var l = xDataPro.length;
+                        for (var t = 0; t < l; t++) {
+                            data_four.push([xDataPro[t], yDataPro[t]])
+                        }
+                        allInfo.push(data_four)
+                    }
+                    var option_line_shake_five = {
+
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        grid: [{
+                            show: false,
+                            left: '0%',
+                            top: '5%',
+                            containLabel: true,
+                            width: '20%',
+                            height: '80%'
+                        }, {
+                            show: false,
+                            left: '20%',
+                            top: '5%',
+                            containLabel: true,
+                            width: '20%',
+                            height: '80%'
+                        }, {
+                            show: false,
+                            left: '40%',
+                            top: '5%',
+                            containLabel: true,
+                            width: '20%',
+                            height: '80%'
+                        }, {
+                            show: false,
+                            left: '60%',
+                            top: '5%',
+                            containLabel: true,
+                            width: '20%',
+                            height: '80%'
+                        }, {
+                            show: false,
+                            left: '80%',
+                            top: '5%',
+                            containLabel: true,
+                            width: '18%',
+                            height: '80%'
+                        }],
+                        xAxis: [{
+                            gridIndex: 0,
+                            type: 'value'
+                        }, {
+                            gridIndex: 1,
+                            type: 'value'
+                        }, {
+                            gridIndex: 2,
+                            type: 'value'
+                        }, {
+                            gridIndex: 3,
+                            type: 'value'
+                        }, {
+                            gridIndex: 4,
+                            type: 'value'
+                        }],
+                        yAxis: [{
+                            gridIndex: 0,
+                            type: 'value'
+                        }, {
+                            gridIndex: 1,
+                            type: 'value'
+                        }, {
+                            gridIndex: 2,
+                            type: 'value'
+                        }, {
+                            gridIndex: 3,
+                            type: 'value'
+                        }, {
+                            gridIndex: 4,
+                            type: 'value'
+                        }],
+                        dataZoom: [{
+                            show: true,
+                            realtime: true,
+                            xAxisIndex: 0,
+                            yAxisIndex: 0,
+                            start: 0,
+                            end: 100
+                        }, {
+                            show: true,
+                            realtime: true,
+                            xAxisIndex: 1,
+                            yAxisIndex: 1,
+                            start: 0,
+                            end: 100
+                        }, {
+                            show: true,
+                            realtime: true,
+                            xAxisIndex: 2,
+                            yAxisIndex: 2,
+                            start: 0,
+                            end: 100
+                        }, {
+                            show: true,
+                            realtime: true,
+                            xAxisIndex: 3,
+                            yAxisIndex: 3,
+                            start: 0,
+                            end: 100
+                        }, {
+                            show: true,
+                            realtime: true,
+                            xAxisIndex: 4,
+                            yAxisIndex: 4,
+                            start: 0,
+                            end: 100
+                        }],
+                        series: [{
+                            data: allInfo[0],
+                            xAxisIndex: 0,
+                            yAxisIndex: 0,
+                            type: 'line',
+                            smooth: true
+                        }, {
+                            data: allInfo[1],
+                            xAxisIndex: 1,
+                            yAxisIndex: 1,
+                            type: 'line',
+                            smooth: true
+                        }, {
+                            data: allInfo[2],
+                            xAxisIndex: 2,
+                            yAxisIndex: 2,
+                            type: 'line',
+                            smooth: true
+                        }, {
+                            data: allInfo[3],
+                            xAxisIndex: 3,
+                            yAxisIndex: 3,
+                            type: 'line',
+                            smooth: true
+                        }, {
+                            data: allInfo[4],
+                            xAxisIndex: 4,
+                            yAxisIndex: 4,
+                            type: 'line',
+                            smooth: true
+                        }]
+                    };{% endcomment %}
+
+
+            var grade_line = echarts.init(document.getElementById('grade_line'));
+            var grade_circle = echarts.init(document.getElementById('grade_circle'));
+            var grade_position = echarts.init(document.getElementById('grade_position'));
+            //    var total_grade = echarts.init(document.getElementById('total_grade'));
+            var heart = echarts.init(document.getElementById('heart'));
+
+            var line_shake_ori = echarts.init(document.getElementById('line_shake_ori'));
+            var line_shake = echarts.init(document.getElementById('line_shake'));
+            var line_shake_x_y_plus = echarts.init(document.getElementById('line_shake_x_y_plus'));
+            var line_shake_pos = echarts.init(document.getElementById('line_shake_pos'));
+
+            var line_up_shake_ori = echarts.init(document.getElementById('line_up_shake_ori'));
+            var line_up_shake = echarts.init(document.getElementById('line_up_shake'));
+            var line_up_shake_x_y_plus = echarts.init(document.getElementById('line_up_shake_x_y_plus'));
+            var line_up_shake_pos = echarts.init(document.getElementById('line_up_shake_pos'));
+
+            var line_shake_merge_info = echarts.init(document.getElementById('line_shake_merge_info'));
+            //    var line_shake_five = echarts.init(document.getElementById('line_shake_five'));
+
+
+            grade_circle.setOption(option_grade_circle);
+            grade_position.setOption(option_grade_pos);
+            grade_line.setOption(option_grade_line);
+            //      total_grade.setOption(option_total_grade);
+            heart.setOption(option_heart);
+
+            line_shake_ori.setOption(option_beside_shake_ori);
+            line_shake.setOption(option_beside_shake_line);
+            line_shake_x_y_plus.setOption(option_beside_shake_x_y_plus);
+            line_shake_pos.setOption(option_beside_shake_pos);
+
+            line_up_shake_ori.setOption(option_up_shake_ori);
+            line_up_shake.setOption(option_up_shake_line);
+            line_up_shake_x_y_plus.setOption(option_up_shake_x_y_plus);
+            line_up_shake_pos.setOption(option_up_shake_pos);
+
+
+            line_shake_merge_info.setOption(option_shake_merge_info);
+            //     line_shake_five.setOption(option_line_shake_five);
+
+
+        });
+
+
+    </script>
+{% endblock %}
+{% block menu %}
+
+    <ul class="nav" id="main-menu">
+        <li>
+            <a href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+        </li>
+        {% comment %}    <li>
+            <a href="{% url 'sport_game_analyse' %}"><i class="fa fa-desktop"></i> 射击数据分析</a>
+        </li>{% endcomment %}
+        <li>
+            <a class="active-menu" href="{% url 'sport_game_history' %}"><i class="fa fa-qrcode"></i> 射击数据</a>
+        </li>
+
+    </ul>
+
+{% endblock %}
+
+
+{% block header %}
+
+    <h1 class="page-header">
+        比赛数据分析
+    </h1>
+    <ol class="breadcrumb">
+        <li class="active">分析结果</li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <form role="form">
+                <div class="form-group">
+                    开始时间:{{ shoot_reports.shoot_date }}&nbsp;{{ shoot_reports.shoot_time }}&nbsp;&nbsp;成绩:{{ shoot_reports.remark }}环
+                </div>
+            </form>
+        </div>
+        <div class="col-md-7">
+        </div>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+
+
+                <div class="row">
+                    <div class="col-md-4">
+                        射击信息
+                    </div>
+                    <div class="col-md-5">
+                    </div>
+                    <div class="col-md-3">
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>射击时间</th>
+                            <th>射击成绩</th>
+                            <th>速射时间</th>
+                            <th>弹着点坐标(mm)</th>
+                            <th>x方向抖动(mm)</th>
+                            <th>y方向抖动(mm)</th>
+                            <th>心率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for shoot in shoot_info %}
+                            <tr>
+
+                                <td>{{ shoot.grade_detail_time }}</td>
+                                <td>{{ shoot.grade }}</td>
+                                <td>{{ shoot.rapid_time }}</td>
+                                <td>{{ shoot.x_pos }},{{ shoot.y_pos }}</td>
+                                <td>{{ shoot.x_shake }}</td>
+                                <td>{{ shoot.y_shake }}</td>
+                                <td>{{ shoot.heart_rate }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(枪的正面移动图)
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_merge_info" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(侧面摄像头原始数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_ori" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(侧面摄像头累加数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(侧面摄像头x和y累加数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_x_y_plus" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(侧面摄像头坐标数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_pos" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(上面摄像头原始数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake_ori" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(上面摄像头累加数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(上面摄像头xy坐标累加数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake_x_y_plus" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性图(上面摄像头坐标数据)
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake_pos" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %}  <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛稳定性坐标图
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_five" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>{% endcomment %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛成绩分布图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_circle" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩坐标图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_position" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            {% comment %} <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛成绩统计图
+                </div>
+                <div class="panel-body">
+                    <div id="total_grade" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>{% endcomment %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩趋势走向图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_line" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩心率走向图
+                </div>
+                <div class="panel-body">
+                    <div id="heart" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

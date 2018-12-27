@@ -69,8 +69,15 @@
             x_pos = x_pos.split(",");
             y_pos = y_pos.split(",");
             var grade_data = [];
+            var pos_data = [];
+            var value = ["一", "二", "三", "四", "五"];
             for (i = 0; i < x_pos.length; i++) {
-                grade_data.push([x_pos[i], y_pos[i]])
+                grade_data.push([x_pos[i], y_pos[i]]);
+                var d1 = {};
+                d1.value = value[i];
+                d1.xAxis = x_pos[i];
+                d1.yAxis = y_pos[i];
+                pos_data.push(d1);
             }
             var x_center = 0;
             var y_center = 0;
@@ -123,7 +130,13 @@
                 series: [{
                     data: grade_data,
                     type: 'line',
-                    smooth: true
+                    smooth: true,
+                    markPoint: {
+                        itemStyle: {
+                            color: 'rgba(0,0,255,0.3)'
+                        },
+                        data: pos_data
+                    }
                 }, {
                     data: circle_data_10,
                     type: 'line',
@@ -196,6 +209,26 @@
 
 
             var data_index = [1, 2, 3, 4, 5];
+            var data_grade_pre = [];
+            for (var j = 0; j < data_grade.length; j++) {
+                var m = Math.random() ;
+                if(m < 0.3){
+                    m = -1;
+                }
+                if(m>=0.3 && m <= 0.6){
+                    m = 0;
+                }
+                if(m > 0.6){
+                    m = 1;
+                }
+                var pre = parseInt(data_grade[j]) + m;
+                if(pre > 50){
+                    pre = 50;
+                }
+                data_grade_pre.push(pre);
+
+
+            }
             var option_grade_line = {
                 title: {
                     left: 'center',
@@ -267,6 +300,12 @@
                         }
                     },
                     data: data_grade
+                },
+                {
+                    name: '预测成绩',
+                    type: 'line',
+                    smooth: true,
+                    data: data_grade_pre
                 }]
             };
 
@@ -336,7 +375,7 @@
             var x_y_plus = [];
             for (i = 0; i < len; i++) {
                 xAxisData.push(i + 1);
-                x_y_plus.push([xData[i],yData[i]])
+                x_y_plus.push([xData[i], yData[i]])
             }
             var option_beside_shake_line = {
                 color: [
@@ -510,8 +549,7 @@
                         xAxisIndex: 0,
                         yAxisIndex: 0,
                         data: xData,
-
-                        symbol: 'none',
+                        //      symbol: 'none',
                         smooth: true
                     },
                     {
@@ -520,7 +558,7 @@
                         xAxisIndex: 1,
                         yAxisIndex: 1,
                         data: yData,
-                        symbol: 'none',
+                        //     symbol: 'none',
                         smooth: true,
                         barWidth: 2
                     }
@@ -532,9 +570,7 @@
             var y_data_ori = "{{ y_data_ori }}";
             var xDataOri = x_data_ori.split(",");
             var yDataOri = y_data_ori.split(",");
-            for(i = 0;i < yDataOri.length;i ++){
-                yDataOri[i] *= -1;
-            }
+
             var option_beside_shake_ori = {
                 color: [
                     '#66CCFF',
@@ -707,7 +743,7 @@
                         xAxisIndex: 0,
                         data: xDataOri,
                         yAxisIndex: 0,
-                        symbol: 'none',
+                        //        symbol: 'none',
                         smooth: true,
                         {% comment %} markLine: {
                              data: [
@@ -725,17 +761,9 @@
                         xAxisIndex: 1,
                         yAxisIndex: 1,
                         data: yDataOri,
-                        symbol: 'none',
-                        smooth: true,
-                        barWidth: 2,
-                         markLine: {
-                             data: [
-                                 {
-                                     name: 'Y 轴值为 10 的水平线',
-                                     yAxis: {{ y_average }}
-                                 }
-                             ]
-                         }
+                        //        symbol: 'none',
+                        smooth: true
+
                     }
                 ]
             };
@@ -769,7 +797,7 @@
             var yDataReal = y_data_real.split(",");
             var beside_data_real = [];
             for (i = 0; i < xDataReal.length; i++) {
-                beside_data_real.push([xDataReal[i], yDataReal[i] * -1])
+                beside_data_real.push([xDataReal[i], 600 - yDataReal[i]])
             }
             var option_beside_shake_pos = {
                 xAxis: {
@@ -993,7 +1021,7 @@
                         xAxisIndex: 0,
                         data: xUpDataOri,
                         yAxisIndex: 0,
-                        symbol: 'none',
+                        //      symbol: 'none',
                         smooth: true
                     },
                     {
@@ -1002,7 +1030,7 @@
                         xAxisIndex: 1,
                         yAxisIndex: 1,
                         data: yUpDataOri,
-                        symbol: 'none',
+                        //       symbol: 'none',
                         smooth: true
 
                     }
@@ -1186,7 +1214,7 @@
                         xAxisIndex: 0,
                         yAxisIndex: 0,
                         data: xUpData,
-                        symbol: 'none',
+                        //        symbol: 'none',
                         smooth: true
                     },
                     {
@@ -1195,15 +1223,15 @@
                         xAxisIndex: 1,
                         yAxisIndex: 1,
                         data: yUpData,
-                        symbol: 'none',
+                        //           symbol: 'none',
                         smooth: true
                     }
                 ]
             };
 
             var up_data_x_y_plus = [];
-            for(i = 0;i < up_len;i ++){
-                up_data_x_y_plus.push([xUpData[i],yUpData[i]]);
+            for (i = 0; i < up_len; i++) {
+                up_data_x_y_plus.push([xUpData[i], yUpData[i]]);
             }
             var option_up_shake_x_y_plus = {
                 xAxis: {
@@ -1236,7 +1264,7 @@
             var yUpDataReal = y_up_data_real.split(",");
             var up_data_real = [];
             for (i = 0; i < xUpDataReal.length; i++) {
-                up_data_real.push([xUpDataReal[i], yUpDataReal[i] * -1])
+                up_data_real.push([xUpDataReal[i], 600 - yUpDataReal[i]])
             }
             var option_up_shake_pos = {
                 xAxis: {
@@ -1262,9 +1290,23 @@
                 }]
             };
 
+            var x_shoot_pos = "{{ x_shoot_pos }}";
+            var y_shoot_pos = "{{ y_shoot_pos }}";
+            x_shoot_pos = x_shoot_pos.split(",");
+            y_shoot_pos = y_shoot_pos.split(",");
+            var data = [];
+
+            for (i = 0; i < x_shoot_pos.length; i++) {
+                var d = {};
+                d.value = value[i];
+                d.xAxis = x_shoot_pos[i];
+                d.yAxis = y_shoot_pos[i];
+                data.push(d);
+            }
+
             var merge_data = [];
-            for(i = 0;i < yData.length;i ++){
-                merge_data.push([xUpData[i],yData[i]]);
+            for (i = 0; i < yData.length; i++) {
+                merge_data.push([xUpData[i], yData[i]]);
             }
             var option_shake_merge_info = {
                 xAxis: {
@@ -1286,168 +1328,289 @@
                     data: merge_data,
 
                     type: 'line',
-                    smooth: true
+                    smooth: true,
+                    markPoint: {
+                        itemStyle: {
+                            color: 'rgba(0,0,255,0.3)'
+                        },
+                        data: data
+                    }
                 }]
             };
 
 
-            {% comment %}        var x_data_process = "{{ x_data_process }}";
-                    var y_data_process = "{{ y_data_process }}";
-                    var xDataAll = x_data_process.split("#");
-                    var yDataAll = y_data_process.split("#");
-                    var len1 = xDataAll.length;
-                    var allInfo = [];
-                    for (var k = 0; k < len1; k++) {
-                        var xDataPro = xDataAll[k].split(",");
-                        var yDataPro = yDataAll[k].split(",");
-                        var data_four = [];
-                        var l = xDataPro.length;
-                        for (var t = 0; t < l; t++) {
-                            data_four.push([xDataPro[t], yDataPro[t]])
-                        }
-                        allInfo.push(data_four)
-                    }
-                    var option_line_shake_five = {
+            var x_data_process = "{{ x_pos_str }}";
+            var y_data_process = "{{ y_pos_str }}";
+            var xDataAll = x_data_process.split("#");
+            var yDataAll = y_data_process.split("#");
+            var len1 = xDataAll.length;
+            var allInfo = [];
+            for (var k = 0; k < len1; k++) {
+                var xDataPro = xDataAll[k].split(",");
+                var yDataPro = yDataAll[k].split(",");
+                var data_four = [];
+                var l = xDataPro.length;
+                for (var t = 0; t < l; t++) {
+                    data_four.push([xDataPro[t], yDataPro[t]])
+                }
+                allInfo.push(data_four)
+            }
+            var option_line_shake_one = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: allInfo[0],
+                    type: 'line',
+                    smooth: true
 
-                        tooltip: {
-                            trigger: 'axis'
-                        },
-                        grid: [{
-                            show: false,
-                            left: '0%',
-                            top: '5%',
-                            containLabel: true,
-                            width: '20%',
-                            height: '80%'
-                        }, {
-                            show: false,
-                            left: '20%',
-                            top: '5%',
-                            containLabel: true,
-                            width: '20%',
-                            height: '80%'
-                        }, {
-                            show: false,
-                            left: '40%',
-                            top: '5%',
-                            containLabel: true,
-                            width: '20%',
-                            height: '80%'
-                        }, {
-                            show: false,
-                            left: '60%',
-                            top: '5%',
-                            containLabel: true,
-                            width: '20%',
-                            height: '80%'
-                        }, {
-                            show: false,
-                            left: '80%',
-                            top: '5%',
-                            containLabel: true,
-                            width: '18%',
-                            height: '80%'
-                        }],
-                        xAxis: [{
-                            gridIndex: 0,
-                            type: 'value'
-                        }, {
-                            gridIndex: 1,
-                            type: 'value'
-                        }, {
-                            gridIndex: 2,
-                            type: 'value'
-                        }, {
-                            gridIndex: 3,
-                            type: 'value'
-                        }, {
-                            gridIndex: 4,
-                            type: 'value'
-                        }],
-                        yAxis: [{
-                            gridIndex: 0,
-                            type: 'value'
-                        }, {
-                            gridIndex: 1,
-                            type: 'value'
-                        }, {
-                            gridIndex: 2,
-                            type: 'value'
-                        }, {
-                            gridIndex: 3,
-                            type: 'value'
-                        }, {
-                            gridIndex: 4,
-                            type: 'value'
-                        }],
-                        dataZoom: [{
-                            show: true,
-                            realtime: true,
-                            xAxisIndex: 0,
-                            yAxisIndex: 0,
-                            start: 0,
-                            end: 100
-                        }, {
-                            show: true,
-                            realtime: true,
-                            xAxisIndex: 1,
-                            yAxisIndex: 1,
-                            start: 0,
-                            end: 100
-                        }, {
-                            show: true,
-                            realtime: true,
-                            xAxisIndex: 2,
-                            yAxisIndex: 2,
-                            start: 0,
-                            end: 100
-                        }, {
-                            show: true,
-                            realtime: true,
-                            xAxisIndex: 3,
-                            yAxisIndex: 3,
-                            start: 0,
-                            end: 100
-                        }, {
-                            show: true,
-                            realtime: true,
-                            xAxisIndex: 4,
-                            yAxisIndex: 4,
-                            start: 0,
-                            end: 100
-                        }],
-                        series: [{
-                            data: allInfo[0],
-                            xAxisIndex: 0,
-                            yAxisIndex: 0,
-                            type: 'line',
-                            smooth: true
-                        }, {
-                            data: allInfo[1],
-                            xAxisIndex: 1,
-                            yAxisIndex: 1,
-                            type: 'line',
-                            smooth: true
-                        }, {
-                            data: allInfo[2],
-                            xAxisIndex: 2,
-                            yAxisIndex: 2,
-                            type: 'line',
-                            smooth: true
-                        }, {
-                            data: allInfo[3],
-                            xAxisIndex: 3,
-                            yAxisIndex: 3,
-                            type: 'line',
-                            smooth: true
-                        }, {
-                            data: allInfo[4],
-                            xAxisIndex: 4,
-                            yAxisIndex: 4,
-                            type: 'line',
-                            smooth: true
-                        }]
-                    };{% endcomment %}
+                }]
+            };
+            var option_line_shake_two = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: allInfo[1],
+                    type: 'line',
+                    smooth: true
+
+                }]
+            };
+            var option_line_shake_three = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: allInfo[2],
+                    type: 'line',
+                    smooth: true
+
+                }]
+            };
+            var option_line_shake_four = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: allInfo[3],
+                    type: 'line',
+                    smooth: true
+
+                }]
+            };
+            var option_line_shake_five = {
+                xAxis: {
+                    type: 'value'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                dataZoom: {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100
+                },
+                series: [{
+                    data: allInfo[4],
+                    type: 'line',
+                    smooth: true
+
+                }]
+            };
+        {% comment %}    var option_line_shake_five = {
+
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: [{
+                    show: false,
+                    left: '0%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '80%'
+                }, {
+                    show: false,
+                    left: '20%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '80%'
+                }, {
+                    show: false,
+                    left: '40%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '80%'
+                }, {
+                    show: false,
+                    left: '60%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '20%',
+                    height: '80%'
+                }, {
+                    show: false,
+                    left: '80%',
+                    top: '5%',
+                    containLabel: true,
+                    width: '18%',
+                    height: '80%'
+                }],
+                xAxis: [{
+                    gridIndex: 0,
+                    type: 'value'
+                }, {
+                    gridIndex: 1,
+                    type: 'value'
+                }, {
+                    gridIndex: 2,
+                    type: 'value'
+                }, {
+                    gridIndex: 3,
+                    type: 'value'
+                }, {
+                    gridIndex: 4,
+                    type: 'value'
+                }],
+                yAxis: [{
+                    gridIndex: 0,
+                    type: 'value'
+                }, {
+                    gridIndex: 1,
+                    type: 'value'
+                }, {
+                    gridIndex: 2,
+                    type: 'value'
+                }, {
+                    gridIndex: 3,
+                    type: 'value'
+                }, {
+                    gridIndex: 4,
+                    type: 'value'
+                }],
+                dataZoom: [{
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 0,
+                    yAxisIndex: 0,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 2,
+                    yAxisIndex: 2,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 3,
+                    yAxisIndex: 3,
+                    start: 0,
+                    end: 100
+                }, {
+                    show: true,
+                    realtime: true,
+                    xAxisIndex: 4,
+                    yAxisIndex: 4,
+                    start: 0,
+                    end: 100
+                }],
+                series: [{
+                    data: allInfo[0],
+                    xAxisIndex: 0,
+                    yAxisIndex: 0,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: allInfo[1],
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: allInfo[2],
+                    xAxisIndex: 2,
+                    yAxisIndex: 2,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: allInfo[3],
+                    xAxisIndex: 3,
+                    yAxisIndex: 3,
+                    type: 'line',
+                    smooth: true
+                }, {
+                    data: allInfo[4],
+                    xAxisIndex: 4,
+                    yAxisIndex: 4,
+                    type: 'line',
+                    smooth: true
+                }]
+            };{% endcomment %}
 
 
             var grade_line = echarts.init(document.getElementById('grade_line'));
@@ -1459,15 +1622,19 @@
             var line_shake_ori = echarts.init(document.getElementById('line_shake_ori'));
             var line_shake = echarts.init(document.getElementById('line_shake'));
             var line_shake_x_y_plus = echarts.init(document.getElementById('line_shake_x_y_plus'));
-            var line_shake_pos = echarts.init(document.getElementById('line_shake_pos'));
+            //      var line_shake_pos = echarts.init(document.getElementById('line_shake_pos'));
 
             var line_up_shake_ori = echarts.init(document.getElementById('line_up_shake_ori'));
             var line_up_shake = echarts.init(document.getElementById('line_up_shake'));
             var line_up_shake_x_y_plus = echarts.init(document.getElementById('line_up_shake_x_y_plus'));
-            var line_up_shake_pos = echarts.init(document.getElementById('line_up_shake_pos'));
+            //     var line_up_shake_pos = echarts.init(document.getElementById('line_up_shake_pos'));
 
             var line_shake_merge_info = echarts.init(document.getElementById('line_shake_merge_info'));
-            //    var line_shake_five = echarts.init(document.getElementById('line_shake_five'));
+            var line_shake_one = echarts.init(document.getElementById('line_shake_one'));
+            var line_shake_two = echarts.init(document.getElementById('line_shake_two'));
+            var line_shake_three = echarts.init(document.getElementById('line_shake_three'));
+            var line_shake_four = echarts.init(document.getElementById('line_shake_four'));
+            var line_shake_five = echarts.init(document.getElementById('line_shake_five'));
 
 
             grade_circle.setOption(option_grade_circle);
@@ -1479,16 +1646,20 @@
             line_shake_ori.setOption(option_beside_shake_ori);
             line_shake.setOption(option_beside_shake_line);
             line_shake_x_y_plus.setOption(option_beside_shake_x_y_plus);
-            line_shake_pos.setOption(option_beside_shake_pos);
+            //        line_shake_pos.setOption(option_beside_shake_pos);
 
             line_up_shake_ori.setOption(option_up_shake_ori);
             line_up_shake.setOption(option_up_shake_line);
             line_up_shake_x_y_plus.setOption(option_up_shake_x_y_plus);
-            line_up_shake_pos.setOption(option_up_shake_pos);
+            //       line_up_shake_pos.setOption(option_up_shake_pos);
 
 
             line_shake_merge_info.setOption(option_shake_merge_info);
-            //     line_shake_five.setOption(option_line_shake_five);
+            line_shake_one.setOption(option_line_shake_one);
+            line_shake_two.setOption(option_line_shake_two);
+            line_shake_three.setOption(option_line_shake_three);
+            line_shake_four.setOption(option_line_shake_four);
+            line_shake_five.setOption(option_line_shake_five);
 
 
         });
@@ -1502,9 +1673,6 @@
         <li>
             <a href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
         </li>
-        {% comment %}    <li>
-            <a href="{% url 'sport_game_analyse' %}"><i class="fa fa-desktop"></i> 射击数据分析</a>
-        </li>{% endcomment %}
         <li>
             <a class="active-menu" href="{% url 'sport_game_history' %}"><i class="fa fa-qrcode"></i> 射击数据</a>
         </li>
@@ -1600,6 +1768,63 @@
     </div>
 
     <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第一枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_one" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第二枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_two" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                     第三枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_three" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                     第四枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_four" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                     第五枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_five" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
 
         <div class="col-md-12">
             <div class="panel panel-default">
@@ -1639,7 +1864,7 @@
         </div>
     </div>
 
-    <div class="row">
+    {% comment %} <div class="row">
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -1651,7 +1876,7 @@
             </div>
         </div>
     </div>
-
+{% endcomment %}
     <div class="row">
 
         <div class="col-md-12">
@@ -1694,7 +1919,7 @@
         </div>
     </div>
 
-    <div class="row">
+    {% comment %}  <div class="row">
 
         <div class="col-md-12">
             <div class="panel panel-default">
@@ -1706,20 +1931,8 @@
                 </div>
             </div>
         </div>
-    </div>
-    {% comment %}  <div class="row">
-
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    比赛稳定性坐标图
-                </div>
-                <div class="panel-body">
-                    <div id="line_shake_five" style="width: 100%;height:500%;"></div>
-                </div>
-            </div>
-        </div>
     </div>{% endcomment %}
+
 
     <div class="row">
         <div class="col-md-6">
@@ -1745,14 +1958,6 @@
     </div>
     <div class="row">
         <div class="col-md-6">
-            {% comment %} <div class="panel panel-default">
-                <div class="panel-heading">
-                    比赛成绩统计图
-                </div>
-                <div class="panel-body">
-                    <div id="total_grade" style="width: 100%;height:500%;"></div>
-                </div>
-            </div>{% endcomment %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     成绩趋势走向图

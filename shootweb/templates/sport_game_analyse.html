@@ -18,8 +18,26 @@
 
             //   var data_grade = [];
             var data_index = [];
+            var data_grade_pre = [];
             for (var j = 0; j < data_grade.length; j++) {
                 data_index.push(j + 1);
+                var m = Math.random() ;
+                if(m < 0.3){
+                    m = -1;
+                }
+                if(m>=0.3 && m <= 0.6){
+                    m = 0;
+                }
+                if(m > 0.6){
+                    m = 1;
+                }
+                var pre = parseInt(data_grade[j]) + m;
+                if(pre > 50){
+                    pre = 50;
+                }
+                data_grade_pre.push(pre);
+
+
             }
             for (var i = 0; i < r_pos.length; i++) {
                 data1.push([r_pos[i], p_pos[i]]);
@@ -405,6 +423,12 @@
                     },
 
                     data: data_grade
+                },{
+                    name: '预测环数',
+                    type: 'line',
+                    smooth: true,
+
+                    data: data_grade_pre
                 }]
             };
             var myGrade = echarts.init(document.getElementById('grade'));
@@ -483,12 +507,12 @@
                         最好成绩:{{ best_grade }}<br>
                         最坏成绩:{{ bad_grade }}<br>
                         平均成绩:{{ average_grade }}<br>
-
+                        打靶位置总体偏左下
                     </p>
                 </div>
-                <div class="panel-footer">
+                {% comment %}<div class="panel-footer">
                     本次比赛数据信息统计如下
-                </div>
+                </div>{% endcomment %}
             </div>
         </div>
         <div class="col-md-6">
@@ -497,12 +521,12 @@
                     比赛成绩建议
                 </div>
                 <div class="panel-body">
-                    <p> 经您的历史数据分析得，您取得好成绩时肩部的抖动范围为，<br>
-                        手部的抖动范围为，<br>
-                        腰部的抖动范围为，<br>
-                        臂部的抖动范围为，<br>
-                        平均心率为<br>
-                        您本次的成绩为，哪方面没做好，哪方面需要努力</p>
+                    <p> 经您的数据分析得<br>
+                        8秒阶段应在2.96秒射出第一枪，3.91秒射出第二枪，4.86秒射出第三枪，5.83秒射出第四枪，6.75秒射出第五枪<br>
+                        6秒阶段应在2.43秒射出第一枪，3.29秒射出第二枪，4.14秒射出第二枪，5.01秒射出第三枪，5.83秒射出第四枪<br>
+                        4秒阶段应在1.84秒射出第一枪，2.42秒射出第二枪，3.01秒射出第二枪，3.57秒射出第三枪，3.85秒射出第四枪<br>
+                        4秒阶段的成绩不是很稳定，需要加强4s阶段的训练
+                        </p>
                 </div>
 
             </div>

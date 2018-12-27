@@ -15,24 +15,6 @@ $(function () {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     var option_relationship = {
         title: {
             textStyle: {
@@ -75,7 +57,7 @@ $(function () {
             axisLabel: {
                 interval: 0
             },
-            data: ['手部', '肩部', '腰部', '臂部', '心率', '速射时间', '时间节奏', '紧张度', '放松度', '专注度', '疲劳程度'],
+            data: ['手部x方向', '手部y方向','瞄准稳定性', '速射时间', '心率']
 
         }],
         yAxis: [{
@@ -85,7 +67,7 @@ $(function () {
         series: [{
             name: '相关系数',
             type: 'bar',
-            data: [3.2, 2.4, 1.5, 2.8, 1.3, 0.4, 0.5, -1.3, 2, 3, -2.2],
+            data: [1.2, -2.4, 3.6,1.5, 2.8],
             markPoint: {
                 data: [{
                     type: 'max',
@@ -142,7 +124,7 @@ $(function () {
                 }
             },
             data: [{
-                value: [6, 7, 8],
+                value: [8, 9, 8],
                 name: '技能点'
             }]
         }

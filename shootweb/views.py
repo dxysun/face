@@ -6,9 +6,107 @@ from shootweb.models import *
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 import math
+from scipy.interpolate import interp1d
+import numpy as np
 
 
 # Create your views here.
+def get_shoot_point(beside_y_data, is_insert=False):
+    nums = []
+    is_smooth = False
+    count_smooth = 0
+    for i in range(0, len(beside_y_data)):
+        y = beside_y_data[i]
+        if y > 10:
+            count_smooth = 0
+        else:
+            count_smooth += 1
+            if count_smooth > 10:
+                is_smooth = True
+        if is_smooth and y >= 10:
+            if beside_y_data[i - 1] > 5:
+                if is_insert:
+                    nums.append((i - 2) * 5)
+                else:
+                    nums.append(i - 2)
+            else:
+                if is_insert:
+                    nums.append((i - 1) * 5)
+                else:
+                    nums.append(i - 1)
+            count_smooth = 0
+            is_smooth = False
+    return nums
+
+
+def get_int_data(list_data, is_negative=False):
+    temp_data = []
+    for data in list_data:
+        d = int(data)
+        if is_negative:
+            d *= -1
+        temp_data.append(d)
+    return temp_data
+
+
+def shake_data_process(data_shake, nums=None):
+    plus_num = 0
+    data_ori = ""
+    data_plus = ""
+    data_plus_array = []
+    pos_array = []
+    pos = ""
+    j = 0
+    for i in range(0, len(data_shake)):
+        data_ori += str(data_shake[i]) + ","
+        data = float(data_shake[i])
+        plus_num += data
+        plus_num = round(plus_num, 2)
+        data_plus_array.append(plus_num)
+        if nums is not None:
+            if j < len(nums) and i == nums[j]:
+                pos_array.append(data_plus_array[i - 80:i + 1])
+                pos += str(plus_num) + ","
+                j += 1
+        data_plus += str(plus_num) + ","
+    if nums is None:
+        return data_ori, data_plus
+    else:
+        return data_ori, data_plus, pos[:-1], pos_array
+
+
+def cut_shake_data(y_shake_data):
+    count_smooth = 0
+    rank = -1
+    for data in y_shake_data:
+        rank += 1
+        if count_smooth < 10 < int(data):
+            count_smooth = 0
+            continue
+        if abs(data) < 10:
+            # print(data)
+            count_smooth += 1
+        if count_smooth == 10:
+            break
+    # print(rank)
+    return y_shake_data[rank - 9:], rank - 9
+
+
+def insert(x_data, y_data):
+    x = []
+    for i in range(1, len(x_data) * 5 + 1, 5):
+        x.append(i)
+    x = np.array(x)
+    x_f3 = interp1d(x, x_data, kind='cubic')
+    y_f3 = interp1d(x, y_data, kind='cubic')
+    x_data_new = []
+    y_data_new = []
+    for i in range(x.min(), x.max() + 1):
+        x_data_new.append(str(round(float(x_f3(i).tolist()), 2)))
+        y_data_new.append(str(round(float(y_f3(i).tolist()), 2)))
+    return x_data_new, y_data_new
+
+
 def convert_x_y(x, y):
     if abs(x) <= 10:
         x = 0
@@ -238,7 +336,9 @@ def sport_game_analyse_id(request):
     x_pos = ""
     y_pos = ""
     shoot_grades = shoot_grade.objects.filter(report_id=report_id).order_by('grade_detail_time')
+    rapid_data = []
     for grade in shoot_grades:
+        rapid_data.append(grade.rapid_time)
         grades += grade.grade + ","
         x_pos += grade.x_pos + ","
         y_pos += grade.y_pos + ","
@@ -264,8 +364,12 @@ def sport_game_analyse_id(request):
     y_up_data_plus = ""
     y_up_data_ori = ""
 
-    y_average = 0
-    x_average = 0
+    y_shoot_pos = ""
+    x_shoot_pos = ""
+
+    x_pos_str = ""
+    y_pos_str = ""
+
     x_shake_data = report.x_shake_data
     y_shake_data = report.y_shake_data
     x_up_shake_data = report.x_up_shake_data
@@ -273,48 +377,47 @@ def sport_game_analyse_id(request):
     if x_shake_data is not None and y_shake_data is not None:
         x_data = x_shake_data.split(",")
         y_data = y_shake_data.split(",")
-        x_sum = 0
-        x_plus_num = 0
-        num = 0
-        for i in range(0, len(x_data)):
-            x_data_ori += x_data[i] + ","
-            data = float(x_data[i])
-            if data > 0:
-                x_plus_num += data
-                num += 1
-            x_sum += data
-            x_data_plus += str(x_sum) + ","
-        x_average = x_plus_num / num
-        # print("average:" + str(x_average))
-        y_sum = 0
-        num = 0
-        y_plus_num = 0
-        for i in range(0, len(y_data)):
-            y_data_ori += y_data[i] + ","
-            data = float(y_data[i]) * -1
-            if data > 0:
-                y_plus_num += data
-                num += 1
-            y_sum += data
-            y_data_plus += str(y_sum) + ","
-        y_average = y_plus_num / num
-        print(y_average)
-
         x_up_data = x_up_shake_data.split(",")
         y_up_data = y_up_shake_data.split(",")
-        x_up_sum = 0
-        for i in range(0, len(x_up_data)):
-            x_up_data_ori += x_up_data[i] + ","
-            data = float(x_up_data[i])
-            x_up_sum += data
-            x_up_data_plus += str(x_up_sum) + ","
 
-        y_up_sum = 0
-        for i in range(0, len(y_up_data)):
-            y_up_data_ori += y_up_data[i] + ","
-            data = float(y_up_data[i]) * -1
-            y_up_sum += data
-            y_up_data_plus += str(y_up_sum) + ","
+        x_data = get_int_data(x_data)
+        y_data = get_int_data(y_data, is_negative=True)
+        x_up_data = get_int_data(x_up_data)
+        y_up_data = get_int_data(y_up_data, is_negative=True)
+        # print(y_data)
+
+        y_data, num = cut_shake_data(y_data)
+        x_data = x_data[num:]
+        x_up_data = x_up_data[num:]
+        y_up_data = y_up_data[num:]
+        nums = get_shoot_point(y_data, is_insert=True)
+
+        x_data, y_data = insert(x_data, y_data)
+
+        x_data_ori, x_data_plus = shake_data_process(x_data)
+        y_data_ori, y_data_plus, y_shoot_pos, y_pos_array = shake_data_process(y_data, nums)
+
+        x_up_data, y_up_data = insert(x_up_data, y_up_data)
+
+        x_up_data_ori, x_up_data_plus, x_shoot_pos, x_pos_array = shake_data_process(x_up_data, nums)
+        y_up_data_ori, y_up_data_plus = shake_data_process(y_up_data)
+        # print(len(x_pos_array))
+        # print(x_pos_array[0])
+        for x_pos_a in x_pos_array:
+            # print(len(x_pos_a))
+            for x_d in x_pos_a:
+                # d1 = x_d
+                d1 = round(x_d - x_pos_a[len(x_pos_a) - 1], 2)
+                x_pos_str += str(d1) + ","
+            x_pos_str = x_pos_str[:-1] + "#"
+        for y_pos_a in y_pos_array:
+            # print(len(y_pos_a))
+            for y_d in y_pos_a:
+                # d1 = y_d
+                d1 = round(y_d - y_pos_a[len(y_pos_a) - 1], 2)
+                y_pos_str += str(d1) + ","
+            y_pos_str = y_pos_str[:-1] + "#"
+        # print(x_pos_str)
     return render(request, 'sport_game_analyse_id.html', {
         'shoot_reports': report,
         'grades': grades,
@@ -325,9 +428,7 @@ def sport_game_analyse_id(request):
         'y_pos': y_pos[:-1],
         'shoot_info': shoot_grades,
         'x_data': x_data_plus[:-1],
-        'x_average': x_average,
         'y_data': y_data_plus[:-1],
-        'y_average': y_average,
         'x_data_ori': x_data_ori[:-1],
         'y_data_ori': y_data_ori[:-1],
         'x_data_pos': report.x_shake_pos,
@@ -338,6 +439,10 @@ def sport_game_analyse_id(request):
         'y_up_data_ori': y_up_data_ori[:-1],
         'x_up_data_pos': report.x_up_shake_pos,
         'y_up_data_pos': report.y_up_shake_pos,
+        'x_shoot_pos': x_shoot_pos,
+        'y_shoot_pos': y_shoot_pos,
+        'x_pos_str': x_pos_str,
+        'y_pos_str': y_pos_str,
     })
 
 

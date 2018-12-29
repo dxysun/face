@@ -22,13 +22,43 @@
             return year + seperator1 + month + seperator1 + strDate;
         }
 
+
+        function item_click(item_id) {
+            var report_name = "shoot_report_item" + item_id;
+            if ($('#' + report_name).is(':checked')) {
+                $("[id = " + report_name + "]:checkbox").prop("checked", false);
+            } else {
+                $("[id = " + report_name + "]:checkbox").prop("checked", true);
+            }
+        }
+
+        function analyse_click(item_id) {
+            var report_name = "shoot_report_item" + item_id;
+            var number = "";
+            $("input:checkbox[id=" + report_name + "]:checked").each(function (k) {
+                if (k == 0) {
+                    number = $(this).val();
+                } else {
+                    number += ',' + $(this).val();
+                }
+            });
+            if (number != "") {
+                $('#report_id').val(number);
+                $('#shoot_info').submit();
+            } else {
+                alert("请选择需要分析的数据项");
+            }
+
+        }
+
         $(function () {
 
-            //日期范围
+            {% comment %}  //日期范围
             laydate.render({
-                elem: '#date_select'
-                , range: true, value: "{{ date1 }} - {{ date2 }}"
-            });
+                 elem: '#date_select'
+                 , range: true, value: "{{ date1 }} - {{ date2 }}"
+             });{% endcomment %}
+
             $('#shoot_analyse').click(function () {
                 var number = "";
                 $('input:checkbox[name=shoot_report]:checked').each(function (k) {
@@ -41,35 +71,37 @@
                 if (number != "") {
                     $('#report_id').val(number);
                     $('#shoot_info').submit();
-                }
-                else {
-
+                } else {
                     alert("请选择需要分析的数据项");
                 }
-
             });
             $('#shoot_select').click(function () {
-                if ($(this).text() == "全选") {
-                    $("[name = shoot_report]:checkbox").prop("checked", true);
-                    $('#shoot_select').text("全不选")
-                }
-                else {
+
+                if ($("[name = shoot_report]:checkbox").is(':checked')) {
                     $("[name = shoot_report]:checkbox").prop("checked", false);
-                    $('#shoot_select').text("全选")
+                } else {
+                    $("[name = shoot_report]:checkbox").prop("checked", true);
                 }
-            })
+                {% comment %} if ($(this).text() == "全选") {
+                     $("[name = shoot_report]:checkbox").prop("checked", true);
+                     $('#shoot_select').text("全不选")
+                 } else {
+                     $("[name = shoot_report]:checkbox").prop("checked", false);
+                     $('#shoot_select').text("全选")
+                 }{% endcomment %}
+            });
 
             $('#select_date').click(function () {
-                var date_info = $('#date_select').val();
-                var date_range = date_info.split(" - ");
-                console.log(date_range[0]);
-                console.log(date_range[1]);
-                $('#date1').val(date_range[0]);
-                $('#date2').val(date_range[1]);
+                {% comment %}   var date_info = $('#date_select option:selected').val();
+                 var date_range = date_info.split(" - ");
+                  console.log(date_range[0]);
+                  console.log(date_range[1]);{% endcomment %}
+                var date_info = $('#shoot_date option:selected').val();
+
+                $('#date1').val(date_info);
+                $('#date2').val(date_info);
                 $('#date_info').submit();
-
             })
-
 
         });
     </script>
@@ -105,8 +137,6 @@
     <div class="row">
         <div class="col-md-12">
             <!-- Advanced Tables -->
-
-
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="row">
@@ -130,19 +160,29 @@
                         <div class="col-md-3">
                         </div>
                         <div class="col-md-4">
-                            {% comment %}<form class="form-inline">
-                                <div class="form-group">
-                                    <label for="date_select">日期选择：</label>
-                                    <input class="form-control" id="date_select" type="text" placeholder="yyyy-MM-dd">
-                                </div>
-                            </form>{% endcomment %}
                             <form id="date_info" action="{% url 'sport_game_history' %}" method="post">
                                 <input id="date1" name="date1" value="" type="text" hidden="hidden">
                                 <input id="date2" name="date2" value="" type="text" hidden="hidden">
                             </form>
+                            {% comment %} <div class="form-group input-group">
+                            <span class="input-group-addon">日期选择：</span>
+                            <input class="form-control" id="date_select" type="text" placeholder="yyyy-MM-dd">
+                        </div>{% endcomment %}
+                            <form id="date_info" action="{% url 'sport_game_history' %}" method="post">
+                                <input id="date1" name="date1" value="" type="text" hidden="hidden">
+                            </form>
                             <div class="form-group input-group">
                                 <span class="input-group-addon">日期选择：</span>
-                                <input class="form-control" id="date_select" type="text" placeholder="yyyy-MM-dd">
+                                <select id="shoot_date" class="form-control">
+                                    {% for date in shoot_dates %}
+                                        {% if date == date1 %}
+                                            <option value="{{ date }}" selected>{{ date }}</option>
+                                        {% else %}
+                                            <option value="{{ date }}">{{ date }}</option>
+                                        {% endif %}
+
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-1">
@@ -151,42 +191,84 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                            <tr>
-                                <th>选择</th>
-                                <th>时间</th>
-                                <th>地点</th>
-                                <th>具体射击时间</th>
-                                <th>开始时间</th>
-                                <th>结束时间</th>
-                                <th>备注</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for report in shoot_reports %}
-                                <tr class="gradeA">
-                                    <td>
-                                        <input name="shoot_report" type="checkbox" value="{{ report.id }}">
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'sport_game_analyse_id' %}?id={{ report.id }}">{{ report.shoot_date }}</a>
-                                    </td>
-                                    <td>北京射击馆</td>
-                                    <td>{{ report.shoot_time }}</td>
-                                    <td>{{ report.start_time }}</td>
-                                    <td>{{ report.end_time }}</td>
-                                    <td>5次射击一共{{ report.remark }}环</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="panel-group" id="accordion">
+                        {% for shoot_reports in all_report %}
+                            <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" data-parent="#accordion"
+                                       href="#collapse{{ forloop.counter }}"
+                                       class="collapsed">
+                                        {% with start=shoot_reports|first %}
+                                            {{ start.shoot_date }}&nbsp;{{ start.start_time }}
+                                        {% endwith %}
+                                        -
+                                        {% with end=shoot_reports|last %}
+                                            {{ end.shoot_date }}&nbsp;{{ end.start_time }}
+                                        {% endwith %}
+                                    </a>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <button id="shoot_select_item{{ forloop.counter }}"
+                                            onclick="item_click({{ forloop.counter }})" class="btn btn-success">
+                                        选中以下
+                                    </button>
+                                    <button id="shoot_analyse_item{{ forloop.counter }}"
+                                            onclick="analyse_click({{ forloop.counter }})" class="btn btn-info">
+                                        数据分析与统计
+                                    </button>
+                                </h4>
+                            </div>
+                            {% if forloop.first %}
+                                <div id="collapse{{ forloop.counter }}" class="panel-collapse in">
+                            {% else %}
+                                <div id="collapse{{ forloop.counter }}" class="panel-collapse collapse">
+                            {% endif %}
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>选择</th>
+                                        <th>时间</th>
+                                        <th>地点</th>
+                                        <th>具体射击时间</th>
+                                        <th>开始时间</th>
+                                        <th>结束时间</th>
+                                        <th>备注</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for report in shoot_reports %}
+                                        <tr class="gradeA">
+                                            <td>
+                                                <input id="shoot_report_item{{ forloop.parentloop.counter }}"
+                                                       name="shoot_report" type="checkbox"
+                                                       value="{{ report.id }}">
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'sport_game_analyse_id' %}?id={{ report.id }}" target="_blank">{{ report.shoot_date }}</a>
+                                            </td>
+                                            <td>北京射击馆</td>
+                                            <td>{{ report.shoot_time }}</td>
+                                            <td>{{ report.start_time }}</td>
+                                            <td>{{ report.end_time }}</td>
+                                            <td>{{ report.remark }}秒阶段，5次射击一共{{ report.total_grade }}环</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+                        {% endfor %}
+
+                        </div>
                     </div>
+
                 </div>
+                <!--End Advanced Tables -->
             </div>
-            <!--End Advanced Tables -->
         </div>
     </div>
 {% endblock %}
-

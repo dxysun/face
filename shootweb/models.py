@@ -129,6 +129,7 @@ class shoot_report(models.Model):
     shoot_time = models.CharField(max_length=200, default="")
     start_time = models.CharField(max_length=200)
     end_time = models.CharField(max_length=200)
+    total_grade = models.FloatField(null=True)
     x_shake_data = models.TextField(null=True)
     y_shake_data = models.TextField(null=True)
     x_shake_pos = models.TextField(null=True)

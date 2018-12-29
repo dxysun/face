@@ -7,32 +7,29 @@
     <script>
         $(function () {
 
-            var grades = "{{ grades }}";
-            var hearts = "{{ hearts }}";
-            var data_grade = grades.split(",");
-            var data1 = [];
-            var r_pos = "{{ r_pos }}";
-            var p_pos = "{{ p_pos }}";
-            r_pos = r_pos.split(",");
-            p_pos = p_pos.split(",");
+            var grade_info = {{ grade_info|safe }};
 
-            //   var data_grade = [];
+            var data_grade = grade_info.grades;
+
+            var r_pos = grade_info.r_pos;
+            var p_pos = grade_info.p_pos;
+            var data1 = [];
             var data_index = [];
             var data_grade_pre = [];
             for (var j = 0; j < data_grade.length; j++) {
                 data_index.push(j + 1);
-                var m = Math.random() ;
-                if(m < 0.3){
+                var m = Math.random();
+                if (m < 0.3) {
                     m = -1;
                 }
-                if(m>=0.3 && m <= 0.6){
+                if (m >= 0.3 && m <= 0.6) {
                     m = 0;
                 }
-                if(m > 0.6){
+                if (m > 0.6) {
                     m = 1;
                 }
                 var pre = parseInt(data_grade[j]) + m;
-                if(pre > 50){
+                if (pre > 50) {
                     pre = 50;
                 }
                 data_grade_pre.push(pre);
@@ -56,8 +53,8 @@
                     formatter: "{a} <br/>{b} : {c} ({d}%)"
                 },
                 legend: {
-                  //  orient: 'vertical',
-                 //   left: 'left',
+                    //  orient: 'vertical',
+                    //   left: 'left',
                     data: ['右上', '右下', '左下', '左上'],
                     top: 40
                 },
@@ -86,7 +83,7 @@
 
             var options = {
                 title: {
-                    text: '射击数据图示',
+                    text: '射击数据图示,成绩稳定性：' + grade_info.grade_stability,
                     left: 'center'
                 },
                 tooltip: {
@@ -197,90 +194,8 @@
                 }]
             };
 
-            //   var legendData = ['手部', '肩部', '腰部', '臂部'];
-            var legendData = ['x方向', 'y方向'];
-            var title = "抖动数据折线图";
-            var serieData = [];
-            var metaDate = [];
-            var xAxisData = [];
-            // 10-21-23.txt
-            var xData = [
-                2.750, 0.500, 0.250, 0.250, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, -0.250, 0.000, 0.000,
-                0.000, 0.000, 0.000, -0.250, 2.250, 0.750, 0.750, 0.500, 0.250, 0.250, 0.000, 0.000, 0.000, 0.000, 0.000, -0.250, 0.000, 0.000, 0.000, -0.250,
-                0.000, 0.000, 0.250, 0.000, 0.000, 0.000, -0.250, 2.500, 1.000, 1.000, 0.250, 0.500, 0.250, 0.000, 0.000, 0.000, 0.000, -0.250, 0.000, -0.250,
-                -0.250, 0.000, 0.000, 0.000, 0.000, -0.250, 0.000, 1.500, 1.000, 0.750, 0.750, 0.250, 0.000, 0.000, 0.250, 0.000, 0.000, 0.000, 0.000,
-                0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 1.000, 1.250, 1.000, 0.500, 0.250, 0.250, 0.000, 0.000, 0.250, 0.000, 0.500,
-                0.000, 0.250, 0.250, 0.250, 0.000, 0.250, 0.250, 0.000, -0.250, -0.250, -1.000, -1.750, -2.750, -1.500, -18.750
-            ];
-            var yData = [
-                0.000, 0.000, -0.250, -0.250, -0.500, -0.250, -0.500, 0.000, -0.250, -0.250, 0.000, -0.250, 0.000,
-                -0.250, 0.000, -0.250, 0.000, 4.000, 0.250, 0.000, 0.250, 0.250, -0.500, -0.250, -0.250, -0.500, -0.500, -0.250, -0.500, -0.250, -0.250, 0.000, -0.250,
-                0.000, 0.000, -0.250, 0.000, 0.000, 0.000, -0.250, 4.250, 0.000, -0.250, 0.000, -0.500, -0.750, -0.500, -0.250, -0.500, -0.500, -0.500, -0.250, -0.250,
-                -0.250, 0.000, 0.000, -0.250, 0.000, 0.000, 0.000, 2.250, 2.000, -0.500, 0.250, -0.250, -0.500, -0.250, -0.250, -0.250, -0.500, 0.000, -0.500,
-                -0.500, -0.250, -0.250, 0.000, -0.250, -0.250, 0.000, 0.000, 0.000, 0.750, 2.750, -0.250, 1.000, 0.250, 0.250, 0.250, 0.000, -0.250, -0.250, -0.250,
-                -0.500, -0.500, -0.500, -0.500, -0.250, -0.250, -0.250, 0.000, 0.000, 0.000, -1.000, -3.500, -8.000, -10.000, 18.750
-            ];
 
-            var len = xData.length;
-            metaDate.push(xData);
-            metaDate.push(yData);
-
-            for (var p = 0; p < len; p++) {
-                xAxisData.push(p + 1);
-            }
-            for (var v = 0; v < legendData.length; v++) {
-                var serie = {
-                    name: legendData[v],
-                    type: 'line',
-                    symbol: "circle",
-                    symbolSize: 10,
-                    data: metaDate[v]
-                };
-                serieData.push(serie)
-            }
-            var colors = ["#036BC8", "#4A95FF", "#5EBEFC", "#2EF7F3", "#FFFFFF"];
-            var option_line_shake = {
-                backgroundColor: '#0f375f',
-                title: {
-                    text: title,
-                    textAlign: 'left',
-                    textStyle: {color: "#fff", fontSize: "16", fontWeight: "normal"}
-                },
-                legend: {
-                    show: true, left: "right", data: legendData, y: "5%",
-                    itemWidth: 18, itemHeight: 12, textStyle: {color: "#fff", fontSize: 14},
-                },
-                dataZoom: {
-                    show: true,
-                    realtime: true,
-                    start: 0,
-                    end: 100
-                },
-                color: colors,
-                grid: {left: '2%', top: "12%", bottom: "5%", right: "5%", containLabel: true},
-                tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
-                xAxis: [
-                    {
-                        type: 'category',
-                        axisLine: {show: true, lineStyle: {color: '#6173A3'}},
-                        axisLabel: {interval: 0, textStyle: {color: '#9ea7c4', fontSize: 14}},
-                        axisTick: {show: false},
-                        data: xAxisData
-                    }
-                ],
-                yAxis: [
-                    {
-                        axisTick: {show: false},
-                        splitLine: {show: false},
-                        axisLabel: {textStyle: {color: '#9ea7c4', fontSize: 14}},
-                        axisLine: {show: true, lineStyle: {color: '#6173A3'}},
-                    }
-                ],
-                series: serieData
-            };
-
-
-            var values = hearts.split(",");
+            var values = grade_info.hearts;
             var heart_index = [];
 
             for (var t = 0; t < data_grade.length + 1; t++) {
@@ -413,7 +328,7 @@
                     gridIndex: 1
                 }],
                 series: [{
-                    name: '环数',
+                    name: '射击成绩',
                     type: 'line',
                     smooth: true,
                     itemStyle: {
@@ -423,7 +338,7 @@
                     },
 
                     data: data_grade
-                },{
+                }, {
                     name: '预测环数',
                     type: 'line',
                     smooth: true,
@@ -431,6 +346,112 @@
                     data: data_grade_pre
                 }]
             };
+
+
+            var report_shake_info = {{ report_shake_info|safe }};
+            console.log(report_shake_info.length);
+            for (k = 0; k < report_shake_info.length; k++) {
+                var xUpData = report_shake_info[k].x_up_data_plus;
+                var yData = report_shake_info[k].y_data_plus;
+                var x_shoot_pos = report_shake_info[k].x_shoot_pos;
+                var y_shoot_pos = report_shake_info[k].y_shoot_pos;
+                var rate = report_shake_info[k].up_shake_rate;
+                var grades = report_shake_info[k].grades;
+
+                var data = [];
+                var value = ["一", "二", "三", "四", "五"];
+                for (i = 0; i < grades.length; i++) {
+                    value[i] = value[i] + ":" + grades[i] + "环";
+                }
+                for (i = 0; i < x_shoot_pos.length; i++) {
+                    var d = {};
+                    d.value = value[i];
+                    d.xAxis = x_shoot_pos[i];
+                    d.yAxis = y_shoot_pos[i];
+                    data.push(d);
+                }
+
+                var merge_data = [];
+                for (i = 0; i < yData.length; i++) {
+                    merge_data.push([xUpData[i], yData[i]]);
+                }
+
+                var shoot_pos_series = [];
+                var merge_info = {
+                    data: merge_data,
+
+                    type: 'line',
+                    smooth: true,
+                    markPoint: {
+                        itemStyle: {
+                            color: 'rgba(0,0,255,0.3)'
+                        },
+                        data: data
+                    }
+                };
+                shoot_pos_series.push(merge_info);
+                var x_pos_center = [];
+                var y_pos_center = [];
+                for (i = 0; i < x_shoot_pos.length; i++) {
+                    var x = parseFloat(report_shake_info[k].x_pos[i] / rate);
+                    var y = parseFloat(report_shake_info[k].y_pos[i] / rate);
+                    x_pos_center.push(x_shoot_pos[i] - x);
+                    y_pos_center.push(y_shoot_pos[i] - y);
+                }
+                var radius = [50, 90, 130];
+                for (i = 0; i < radius.length; i++) {
+                    radius[i] /= rate;
+                }
+                for (i = 0; i < 5; i++) {
+
+                    for (j = 0; j < 3; j++) {
+                        var circle_grade_data = [];
+                        var x_center = x_pos_center[i];
+                        var y_center = y_pos_center[i];
+                        var x_pos_start = x_center + radius[j] * Math.cos(0);
+                        var y_pos_start = y_center + radius[j] * Math.sin(0);
+
+                        for (var angle = 0; angle < 360; angle += 10) {
+                            var x1 = x_center + radius[j] * Math.cos(angle * Math.PI / 180);
+                            var y1 = y_center + radius[j] * Math.sin(angle * Math.PI / 180);
+                            circle_grade_data.push([x1, y1]);
+                        }
+                        circle_grade_data.push([x_pos_start, y_pos_start]);
+                        var pos_temp = {
+
+                            data: circle_grade_data,
+                            type: 'line',
+                            smooth: true
+                        };
+                        shoot_pos_series.push(pos_temp);
+                    }
+                }
+
+                var option_shake_merge_info = {
+                    xAxis: {
+                        type: 'value'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    dataZoom: {
+                        show: true,
+                        realtime: true,
+                        start: 0,
+                        end: 100
+                    },
+                    series: shoot_pos_series
+                };
+                var name = 'line_shake_merge_info' + k;
+                console.log(name);
+                var line_shake_merge_info = echarts.init(document.getElementById(name));
+                line_shake_merge_info.setOption(option_shake_merge_info);
+            }
+
+
             var myGrade = echarts.init(document.getElementById('grade'));
             var myChart = echarts.init(document.getElementById('circle'));
             var myTotalGrade = echarts.init(document.getElementById('total_grade'));
@@ -483,12 +504,6 @@
 
                 <div class="form-group">
                     <label>射击数据分析</label>
-                    {% comment %}   <select class="form-control">
-                        {% for report in shoot_reports %}
-                            <option>时间:{{ report.shoot_date }}&nbsp;&nbsp;&nbsp;成绩:{{ report.remark }}</option>
-                        {% endfor %}
-                    </select>{% endcomment %}
-
                 </div>
             </form>
         </div>
@@ -526,7 +541,7 @@
                         6秒阶段应在2.43秒射出第一枪，3.29秒射出第二枪，4.14秒射出第二枪，5.01秒射出第三枪，5.83秒射出第四枪<br>
                         4秒阶段应在1.84秒射出第一枪，2.42秒射出第二枪，3.01秒射出第二枪，3.57秒射出第三枪，3.85秒射出第四枪<br>
                         4秒阶段的成绩不是很稳定，需要加强4s阶段的训练
-                        </p>
+                    </p>
                 </div>
 
             </div>
@@ -592,69 +607,49 @@
             </div>
         </div>
     </div>
-    {% comment %} <div class="row">
-
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    比赛稳定性图
-                </div>
-                <div class="panel-body">
-                    <div id="line_shake" style="width: 100%;height:500%;"></div>
-                </div>
-            </div>
-        </div>
-    </div>{% endcomment %}
 
     <div class="row">
         <div class="col-md-12">
-            <!-- Advanced Tables -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="row">
-                        <div class="col-md-4">
-                            查看所选射击数据具体信息
-                        </div>
-                        <div class="col-md-5">
-                        </div>
-                        <div class="col-md-3">
-                        </div>
-                    </div>
-                    <br>
-
+                    所选射击数据具体信息<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;日期 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    | 开始时间 &nbsp;&nbsp;&nbsp;&nbsp;
+                    | 结束时间 &nbsp;&nbsp;&nbsp;&nbsp;
+                    | 备注
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                            <tr>
+                    <div class="panel-group" id="accordion1">
+                        {% for report in shoot_reports %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" href="#collapse{{ forloop.counter }}"
+                                           class="collapsed">
+                                            {{ report.shoot_date }}
+                                            | {{ report.start_time }}
+                                            | {{ report.end_time }}
+                                            | {{ report.remark }}秒阶段，5次射击一共{{ report.total_grade }}环</a>
 
-                                <th>时间</th>
-                                <th>地点</th>
-                                <th>开始时间</th>
-                                <th>结束时间</th>
-                                <th>备注</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for report in shoot_reports %}
-                                <tr class="gradeA">
-                                    <td>
-                                        <a href="{% url 'sport_game_analyse_id' %}?id={{ report.id }}">{{ report.shoot_date }}</a>
-                                    </td>
-                                    <td>北京射击馆</td>
-                                    <td>{{ report.start_time }}</td>
-                                    <td>{{ report.end_time }}</td>
-                                    <td>5次射击一共{{ report.remark }}环</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                                    </h4>
+                                </div>
+                                <div id="collapse{{ forloop.counter }}" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <a href="{% url 'sport_game_analyse_id' %}?id={{ report.id }}" target="_blank">详细信息</a><br>
+                                        <div id="line_shake_merge_info{{ forloop.counter0 }}"
+                                             style="width: 1200%;height:300%;">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
                     </div>
                 </div>
             </div>
-            <!--End Advanced Tables -->
         </div>
     </div>
+
 {% endblock %}
 

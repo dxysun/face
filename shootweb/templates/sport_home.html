@@ -42,11 +42,23 @@
                     比赛成绩统计
                 </div>
                 <div class="panel-body">
-                    <p> 经您的历史数据分析得，<br>
-                        最好成绩为:50环<br>
-                        最坏成绩为:45环<br>
-                        您的平均成绩为:48.82环<br>
-                        平均心率为:80.4<br>
+                    <p> 经您的历史数据分析得:<br>
+                        八秒阶段一共进行了{{ stage_eight.report_len }}组射击，最好成绩为:{{ stage_eight.best_grade }}环  &nbsp;&nbsp; 最坏成绩为:{{ stage_eight.bad_grade }}环  &nbsp;&nbsp;
+                        平均成绩为:{{ stage_eight.average_grade }}环  &nbsp;&nbsp; 平均心率为:{{ stage_eight.average_heart }}
+                        <br>
+                        10环率为{{ stage_eight.ten_ring }} &nbsp;&nbsp;9环率为{{ stage_eight.nine_ring }}&nbsp;&nbsp;8环率为{{ stage_eight.eight_ring }}
+                        <br>
+                        <br>
+                        六秒阶段一共进行了{{ stage_six.report_len }}组射击，最好成绩为:{{ stage_six.best_grade }}环  &nbsp;&nbsp; 最坏成绩为:{{ stage_six.bad_grade }}环  &nbsp;&nbsp;
+                        平均成绩为:{{ stage_six.average_grade }}环  &nbsp;&nbsp; 平均心率为:{{ stage_six.average_heart }}
+                        <br>
+                        10环率为{{ stage_six.ten_ring }} &nbsp;&nbsp;9环率为{{ stage_six.nine_ring }}&nbsp;&nbsp;8环率为{{ stage_six.eight_ring }}
+                        <br>
+                        <br>
+                        四秒阶段一共进行了{{ stage_four.report_len }}组射击，最好成绩为:{{ stage_four.best_grade }}环  &nbsp;&nbsp; 最坏成绩为:{{ stage_four.bad_grade }}环  &nbsp;&nbsp;
+                        平均成绩为:{{ stage_four.average_grade }}环  &nbsp;&nbsp; 平均心率为:{{ stage_four.average_heart }}
+                        <br>
+                        10环率为{{ stage_four.ten_ring }} &nbsp;&nbsp;9环率为{{ stage_four.nine_ring }}&nbsp;&nbsp;8环率为{{ stage_four.eight_ring }}
                 </div>
 
             </div>
@@ -58,10 +70,15 @@
                 </div>
                 <div class="panel-body">
                     <p> 经您的历史数据分析得<br>
-                        8秒阶段应在2.96秒射出第一枪，3.91秒射出第二枪，4.86秒射出第三枪，5.83秒射出第四枪，6.75秒射出第五枪<br>
-                        6秒阶段应在2.43秒射出第一枪，3.29秒射出第二枪，4.14秒射出第二枪，5.01秒射出第三枪，5.83秒射出第四枪<br>
-                        4秒阶段应在1.84秒射出第一枪，2.42秒射出第二枪，3.01秒射出第二枪，3.57秒射出第三枪，3.85秒射出第四枪<br>
-                        4秒阶段的成绩不是很稳定，需要加强4s阶段的训练
+                        8秒阶段应在{{ stage_eight.one_average }}秒射出第一枪，{{ stage_eight.two_average }}秒射出第二枪，
+                        {{ stage_eight.three_average }}秒射出第三枪，{{ stage_eight.four_average }}秒射出第四枪，{{ stage_eight.five_average }}秒射出第五枪
+                        <br>
+                        6秒阶段应在{{ stage_six.one_average }}秒射出第一枪，{{ stage_six.two_average }}秒射出第二枪，
+                        {{ stage_six.three_average }}秒射出第三枪，{{ stage_six.four_average }}秒射出第四枪，{{ stage_six.five_average }}秒射出第五枪
+                        <br>
+                        4秒阶段应在{{ stage_four.one_average }}秒射出第一枪，{{ stage_four.two_average }}秒射出第二枪，
+                        {{ stage_four.three_average }}秒射出第三枪，{{ stage_four.four_average }}秒射出第四枪，{{ stage_four.five_average }}秒射出第五枪
+
                 </div>
 
             </div>

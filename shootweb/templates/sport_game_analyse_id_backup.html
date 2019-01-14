@@ -1,0 +1,269 @@
+{% extends 'base_shoot.html' %}
+
+{% block title %}运动员数据分析-运动员主页{% endblock %}
+
+{% block script %}
+    <script>
+
+
+
+    </script>
+{% endblock %}
+{% block menu %}
+
+    <ul class="nav" id="main-menu">
+        <li>
+            <a href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+        </li>
+        <li>
+            <a class="active-menu" href="{% url 'sport_game_history' %}"><i class="fa fa-qrcode"></i> 射击数据</a>
+        </li>
+
+    </ul>
+
+{% endblock %}
+
+
+{% block header %}
+
+    <h1 class="page-header">
+        比赛数据分析
+    </h1>
+    <ol class="breadcrumb">
+        <li class="active">分析结果</li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <form role="form">
+                <div class="form-group">
+                    开始时间:{{ shoot_reports.shoot_date }}&nbsp;{{ shoot_reports.shoot_time }}&nbsp;&nbsp;成绩:{{ shoot_reports.total_grade }}环
+                </div>
+            </form>
+        </div>
+        <div class="col-md-7">
+        </div>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        射击信息（抖动数据不完整）
+                    </div>
+                    <div class="col-md-5">
+                    </div>
+                    <div class="col-md-3">
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>射击时间</th>
+                            <th>射击成绩</th>
+                            <th>速射时间</th>
+                            <th>弹着点坐标(mm)</th>
+                            {% comment %}    <th>x方向抖动(mm)</th>
+                            <th>y方向抖动(mm)</th>{% endcomment %}
+                            <th>心率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for shoot in shoot_info %}
+                            <tr>
+
+                                <td>{{ shoot.grade_detail_time }}</td>
+                                <td>{{ shoot.grade }}</td>
+                                <td>{{ shoot.rapid_time }}</td>
+                                <td>{{ shoot.x_pos }},{{ shoot.y_pos }}</td>
+                                {% comment %}    <td>{{ shoot.x_shake }}</td>
+                                <td>{{ shoot.y_shake }}</td>{% endcomment %}
+                                <td>{{ shoot.heart_rate }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    枪的正面移动图
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_merge_info" style="width: 100%;height:400%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛靶图
+                </div>
+                <div class="panel-body">
+                    <div id="line_pos_five" style="width: 100%;height:200%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    上面摄像头xy坐标累加数据
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake_x_y_plus" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第一枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_one" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第二枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_two" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第三枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_three" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第四枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_four" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    第五枪
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_five" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    侧面摄像头原始数据
+                </div>
+                <div class="panel-body">
+                    <div id="line_shake_ori" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    上面摄像头原始数据
+                </div>
+                <div class="panel-body">
+                    <div id="line_up_shake_ori" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    比赛成绩分布图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_circle" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩坐标图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_position" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩趋势走向图
+                </div>
+                <div class="panel-body">
+                    <div id="grade_line" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    成绩心率走向图
+                </div>
+                <div class="panel-body">
+                    <div id="heart" style="width: 100%;height:500%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

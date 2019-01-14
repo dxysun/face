@@ -7,9 +7,11 @@ from django.http.response import JsonResponse
 from django.shortcuts import redirect
 import math
 from scipy.interpolate import interp1d
+from scipy import optimize
 import numpy as np
 import json
 import datetime
+import copy
 
 
 # Create your views here.
@@ -77,6 +79,20 @@ def convert_x_y(x, y):
 # tan φ=y/x
 def cart_to_polar(x, y):
     x, y = convert_x_y(x, y)
+    z = pow(x, 2) + pow(y, 2)
+    r = math.sqrt(z)
+    angle = math.atan2(y, x) * 180 / math.pi
+    if angle < 0:
+        angle = 360 + angle
+    r = round(r, 2)
+    angle = round(angle, 2)
+    # print(r)
+    # print(11 - r)
+    # print(angle)
+    return r, angle
+
+
+def cart_to_polar_1(x, y):
     z = pow(x, 2) + pow(y, 2)
     r = math.sqrt(z)
     angle = math.atan2(y, x) * 180 / math.pi
@@ -196,25 +212,75 @@ def shake_data_process(data_shake, is_negative=False):
     return data_plus_array
 
 
-def shake_get_plus_shoot_point(data_plus_array, nums, is_insert=False):
+def shake_get_plus_shoot_point(data_plus_array, nums, is_insert=False, pos_num=8, after_shoot=1):
     pos_array = []
     pos = []
     j = 0
-    n = 10
-    m = 2
+    # if stage == 4:
+    #     n = 8
+    # elif stage == 6:
+    #     n = 10
+    # else:
+    #     n = 15
     if is_insert:
-        n *= 5
-        m = 5
+        pos_num *= 5
+        after_shoot *= 5
+    after_shoot += 1
     for i in range(0, len(data_plus_array)):
         plus_num = data_plus_array[i]
         if j < len(nums) and i == nums[j]:
-            if i - n > 0:
-                pos_array.append(data_plus_array[i - n:i + m])
+            if i - pos_num > 0:
+                pos_array.append(data_plus_array[i - pos_num:i + after_shoot])
             else:
-                pos_array.append(data_plus_array[0:i + m])
+                pos_array.append(data_plus_array[0:i + after_shoot])
             pos.append(plus_num)
             j += 1
     return pos, pos_array
+
+
+def shake_get_stability_shoot_array(y_pos_array, after_shoot, is_insert=False):
+    new_var_array = []
+    if is_insert:
+        after_shoot *= 5
+    for arr in y_pos_array:
+        new_arr = arr[:-after_shoot]
+        new_var_array.append(get_variance_in_array(new_arr))
+    return new_var_array
+
+
+def shake_get_average_x_shoot_array(y_pos_array, after_shoot, is_insert=False, get_distance=False):
+    new_var_array = []
+    if is_insert:
+        after_shoot *= 5
+    shoot_point = []
+    for arr in y_pos_array:
+        new_arr = arr[:-after_shoot]
+        shoot_point.append(arr[-(after_shoot + 1)])
+        new_var_array.append(get_average_x_in_array(new_arr))
+    if get_distance:
+        move_distance = []
+        for i in range(1, len(shoot_point)):
+            move_distance.append(abs(shoot_point[i] - shoot_point[i - 1]))
+        return new_var_array, move_distance
+    else:
+        return new_var_array
+
+
+def get_variance_in_array(data):
+    data_sum = sum(data)
+    data_average = data_sum / len(data)
+    sum1 = 0
+    for d in data:
+        sum1 += (d - data_average) * (d - data_average)
+    return round(math.sqrt(sum1 / len(data)), 2)
+
+
+def get_average_x_in_array(data):
+    diff_array = []
+    data = data[-6:]
+    for i in range(len(data) - 1, 0, -1):
+        diff_array.append(abs(data[i] - data[i - 1]))
+    return round(sum(diff_array) / len(diff_array), 2)
 
 
 def cut_shake_data(y_shake_data):
@@ -244,8 +310,15 @@ def process_grade_rapid_time(rapid_data):
     return data
 
 
-def get_shoot_point(beside_y_data, is_insert=False, limit=10):
+def get_shoot_point(beside_y_data, is_insert=False, limit=10, stage=8):
+    shoot_array = []
+    last_index = 0
     nums = []
+    len_smooth = 11
+    if stage == 6:
+        len_smooth = 7
+    if stage == 4:
+        len_smooth = 5
     is_smooth = False
     count_smooth = 0
     for i in range(0, len(beside_y_data)):
@@ -254,13 +327,21 @@ def get_shoot_point(beside_y_data, is_insert=False, limit=10):
             if beside_y_data[i - 1] > 5:
                 if is_insert:
                     nums.append((i - 2) * 5)
+                    shoot_array.append([last_index, (i - 2) * 5])
+                    last_index = (i - 2) * 5 + 1
                 else:
                     nums.append(i - 2)
+                    shoot_array.append([last_index, i - 2])
+                    last_index = i - 1
             else:
                 if is_insert:
                     nums.append((i - 1) * 5)
+                    shoot_array.append([last_index, (i - 1) * 5])
+                    last_index = (i - 1) * 5 + 1
                 else:
                     nums.append(i - 1)
+                    shoot_array.append([last_index, i - 1])
+                    last_index = i
             count_smooth = 0
             is_smooth = False
             continue
@@ -270,40 +351,42 @@ def get_shoot_point(beside_y_data, is_insert=False, limit=10):
             count_smooth = 0
         else:
             count_smooth += 1
-            if count_smooth >= 5:
+            if count_smooth >= len_smooth:
                 is_smooth = True
-    return nums
+    # print(nums)
+    # print(shoot_array)
+    return nums, shoot_array
 
 
 def fun(x, a, b, c):
     return a * x * x + b * x + c
 
 
-def process_shake_pos_info(beside_x_pos, beside_y_pos, up_x_pos, up_y_pos):
-    beside_x_pos = beside_x_pos.split(",")
-    beside_y_pos = beside_y_pos.split(",")
-    up_x_pos = up_x_pos.split(",")
-    up_y_pos = up_y_pos.split(",")
+def get_shoot_info(y_sum_data):
+    start = 0
+    for end in range(10, len(y_sum_data)):
+        y = y_sum_data[start:end]
+        x = []
+        for i in range(start, end):
+            x.append(i)
+        popt, pcov = optimize.curve_fit(fun, x, y)
+        a = popt[0]
+        b = popt[1]
+        mid = - (b / (2 * a))
+        if start < mid < end:
+            print(start)
+            print(end)
+            print()
+        start += 1
+
+
+def process_shake_pos_info(beside_x_pos):
     beside_x_data = "0,"
-    beside_y_data = "0,"
-    up_x_data = "0,"
-    up_y_data = "0,"
     for i in range(1, len(beside_x_pos)):
         d_x = int(beside_x_pos[i]) - int(beside_x_pos[i - 1])
-        d_y = int(beside_y_pos[i]) - int(beside_y_pos[i - 1])
         beside_x_data += str(d_x) + ","
-        beside_y_data += str(d_y) + ","
     beside_x_data = beside_x_data[:-1]
-    beside_y_data = beside_y_data[:-1]
-
-    for i in range(1, len(up_x_pos)):
-        d_x = int(up_x_pos[i]) - int(up_x_pos[i - 1])
-        d_y = int(up_y_pos[i]) - int(up_y_pos[i - 1])
-        up_x_data += str(d_x) + ","
-        up_y_data += str(d_y) + ","
-    up_x_data = up_x_data[:-1]
-    up_y_data = up_y_data[:-1]
-    return beside_x_data, beside_y_data, up_x_data, up_y_data
+    return beside_x_data
 
 
 def array_to_str(data):
@@ -395,32 +478,30 @@ def get_grade_stability(x_pos, y_pos):
     return round(res / len(x_pos), 2)
 
 
-def process_pos_array(pos_array, shoot_pos, grade_pos, up_shake_rate, is_average=False):
-    y_pos_average_str = []
+def process_pos_array(pos_array, shoot_pos, grade_pos, up_shake_rate):
     y_pos_str = []
-    last_num = None
-    temp_sum = 0
-    i = 5 - len(shoot_pos)
+    i = 5 - len(pos_array)
     shoot_point = []
     for pos_a in pos_array:
         temp = []
         for y_d in pos_a:
-            if is_average:
-                if last_num is not None:
-                    cha = y_d - last_num
-                    temp_sum += cha
-                last_num = y_d
             d1 = round(y_d - shoot_pos[i], 2) + int(grade_pos[i] / up_shake_rate)
             temp.append(d1)
         shoot_point.append(int(grade_pos[i] / up_shake_rate))
         i += 1
-        if is_average:
-            y_pos_average_str.append(round(temp_sum / (len(pos_a) - 1), 2))
         y_pos_str.append(temp)
-    if is_average:
-        return y_pos_str, shoot_point, y_pos_average_str
-    else:
-        return y_pos_str, shoot_point
+    return y_pos_str, shoot_point
+
+
+def get_beside_shoot_stability(pos_array):
+    last_num = None
+    temp_sum = 0
+    for pos_a in pos_array:
+        temp = []
+        for y_d in pos_a:
+            if last_num is not None:
+                cha = y_d - last_num
+                temp_sum += cha
 
 
 def get_shoot_date(user_name):
@@ -429,6 +510,182 @@ def get_shoot_date(user_name):
     for r in shoot_reports:
         shoot_dates.append(r['shoot_date'])
     return shoot_dates
+
+
+def g_1(r, r_e=130):
+    if r == 0:
+        res = 0
+    elif r == r_e:
+        res = 1
+    else:
+        res = (r * r) / (r_e * r_e)
+    return res
+
+
+def g_2(a, a_e=360):
+    if a == 0:
+        res = 0
+    elif a == a_e:
+        res = 1
+    else:
+        res = a / a_e
+    return res
+
+
+def j_radius(radius):
+    b = g_1(radius[0])
+    n = len(radius)
+    for k in range(1, len(radius) - 1):
+        g_k = g_1(radius[k])
+        g_k_1 = g_1(radius[k + 1])
+        temp = g_k_1 - g_k - (k / n) * (k / n) * (1 / g_k_1 - 1 / g_k) - (2 * k / n) * math.log(g_k_1 / g_k)
+        b += temp
+    return 1 - math.sqrt(b)
+
+
+def j_angle(angle):
+    b = g_2(angle[0])
+    n = len(angle)
+    for k in range(1, len(angle) - 1):
+        g_k = g_2(angle[k])
+        g_k_1 = g_2(angle[k + 1])
+        temp = g_k_1 - g_k - (k / n) * (k / n) * (1 / g_k_1 - 1 / g_k) - (2 * k / n) * math.log(g_k_1 / g_k)
+        b += temp
+    return 1 - math.sqrt(b)
+
+
+def get_average_in_circle(x_pos, y_pos):
+    r_pos = []
+    a_pos = []
+    for x, y in zip(x_pos, y_pos):
+        r, angle = cart_to_polar_1(x, y)
+        r_pos.append(r)
+        a_pos.append(angle)
+    j_r = j_radius(r_pos)
+    j_a = j_angle(a_pos)
+    return j_r * j_a
+
+
+def get_shoot_stage(report):
+    return int(report.remark)
+
+
+def set_report_stage_info(stage_four, report):
+    if stage_four.get('report_len') is None:
+        stage_four['report_len'] = 1
+    else:
+        stage_four['report_len'] += 1
+    if stage_four.get('all_grade') is None:
+        stage_four["all_grade"] = report.total_grade
+    else:
+        stage_four["all_grade"] += report.total_grade
+    if stage_four.get('best_grade') is None:
+        stage_four["best_grade"] = report.total_grade
+    else:
+        if report.total_grade > stage_four["best_grade"]:
+            stage_four["best_grade"] = report.total_grade
+    if stage_four.get('bad_grade') is None:
+        stage_four["bad_grade"] = report.total_grade
+    else:
+        if report.total_grade < stage_four["bad_grade"]:
+            stage_four["bad_grade"] = report.total_grade
+    return stage_four
+
+
+def set_report_heart_info(stage_four, heart):
+    if stage_four.get('all_heart') is None:
+        stage_four["all_heart"] = heart
+    else:
+        stage_four["all_heart"] += heart
+    return stage_four
+
+
+def set_report_shoot_rapid_info(stage_four, grade, rapid_time, i, stage):
+    if stage_four.get("grades") is None:
+        stage_four["grades"] = []
+    stage_four["grades"].append(int(grade))
+    if i == 0 and int(grade) == 10:
+        if stage_four.get("one") is None:
+            stage_four["one"] = []
+        stage_four["one"].append(float(rapid_time))
+    if i == 1 and int(grade) == 10:
+        if stage_four.get("two") is None:
+            stage_four["two"] = []
+        stage_four["two"].append(float(rapid_time))
+    if i == 2 and int(grade) == 10:
+        if stage_four.get("three") is None:
+            stage_four["three"] = []
+        stage_four["three"].append(float(rapid_time))
+    if i == 3 and int(grade) == 10:
+        if stage_four.get("four") is None:
+            stage_four["four"] = []
+        stage_four["four"].append(float(rapid_time))
+    if i == 4 and int(grade) == 10:
+        if stage_four.get("five") is None:
+            stage_four["five"] = []
+        if float(rapid_time) < 1:
+            rapid_time = float(stage) + float(rapid_time)
+        stage_four["five"].append(float(rapid_time))
+    return stage_four
+
+
+def get_array_average(arr):
+    return round(sum(arr) / len(arr), 2)
+
+
+def get_ring_rate(grades):
+    num_10 = 0
+    num_9 = 0
+    num_8 = 0
+    for g in grades:
+        if g == 10:
+            num_10 += 1
+        if g == 9:
+            num_9 += 1
+        if g == 8:
+            num_8 += 1
+    return round(num_10 / len(grades), 2), round(num_9 / len(grades), 2), round(num_8 / len(grades), 2)
+
+
+def process_report_stage_info(stage):
+    stage["average_grade"] = round(stage["all_grade"] / stage['report_len'], 2)
+    stage["average_heart"] = int(stage["all_heart"] / stage['report_len'])
+    stage["one_average"] = get_array_average(stage["one"])
+    stage["two_average"] = get_array_average(stage["two"])
+    stage["three_average"] = get_array_average(stage["three"])
+    stage["four_average"] = get_array_average(stage["four"])
+    stage["five_average"] = get_array_average(stage["five"])
+    stage["ten_ring"], stage["nine_ring"], stage["eight_ring"] = get_ring_rate(stage["grades"])
+    return stage
+
+
+def process_shoot_y_pos_to_one_line(y_data_plus, y_shoot_array, up_shake_rate, y_shoot_pos, y_pos):
+    data_plus_array = []
+    a_i = 0
+    for shoot_array in y_shoot_array:
+        if a_i == 4:
+            data_plus_array.append(y_data_plus[shoot_array[0]:])
+        else:
+            data_plus_array.append(y_data_plus[shoot_array[0]:shoot_array[1] + 1])
+        a_i += 1
+    diff_pos = [0, 0, 0, 0, 0]
+    first_center_y_pos = y_shoot_pos[0] - int((y_pos[0] / up_shake_rate))
+    if first_center_y_pos < 30:
+        diff_pos[0] = 30 - first_center_y_pos
+        y_shoot_pos[0] += diff_pos[0]
+        first_center_y_pos = 30
+    for index in range(1, len(y_pos)):
+        center_y_pos = y_shoot_pos[index] - int((y_pos[index] / up_shake_rate))
+        diff_pos[index] = first_center_y_pos - center_y_pos
+        y_shoot_pos[index] += diff_pos[index]
+    j = 0
+    y_data_plus_new = []
+    for plus_array in data_plus_array:
+        for i in range(len(plus_array)):
+            plus_array[i] += diff_pos[j]
+        y_data_plus_new.extend(plus_array)
+        j += 1
+    return y_data_plus_new, y_shoot_pos
 
 
 def index(request):
@@ -505,7 +762,56 @@ def main(request):
 
 
 def sport_home(request):
-    return render(request, 'sport_home.html')
+    user_name = request.session.get('user')
+    shoot_reports = shoot_report.objects.filter(user_name=user_name)
+    stage_four = {}
+    stage_six = {}
+    stage_eight = {}
+    for report in shoot_reports:
+        shoot_grades = shoot_grade.objects.filter(report_id=report.id).order_by('grade_detail_time')
+        stage = get_shoot_stage(report)
+        if stage == 4:
+            stage_four = set_report_stage_info(stage_four, report)
+        if stage == 6:
+            stage_six = set_report_stage_info(stage_six, report)
+        if stage == 8:
+            stage_eight = set_report_stage_info(stage_eight, report)
+        heart_four = 0
+        heart_six = 0
+        heart_eight = 0
+        i = 0
+        for grade in shoot_grades:
+            if stage == 4:
+                heart_four += grade.heart_rate
+                stage_four = set_report_shoot_rapid_info(stage_four, grade.grade, grade.rapid_time, i, stage)
+            if stage == 6:
+                heart_six += grade.heart_rate
+                stage_six = set_report_shoot_rapid_info(stage_six, grade.grade, grade.rapid_time, i, stage)
+            if stage == 8:
+                heart_eight += grade.heart_rate
+                stage_eight = set_report_shoot_rapid_info(stage_eight, grade.grade, grade.rapid_time, i, stage)
+            i += 1
+
+        heart_four /= 5
+        heart_six /= 5
+        heart_eight /= 5
+        if stage == 4:
+            stage_four = set_report_heart_info(stage_four, heart_four)
+        if stage == 6:
+            stage_six = set_report_heart_info(stage_six, heart_six)
+        if stage == 8:
+            stage_eight = set_report_heart_info(stage_eight, heart_eight)
+    if len(stage_four) > 0:
+        stage_four = process_report_stage_info(stage_four)
+    if len(stage_six) > 0:
+        stage_six = process_report_stage_info(stage_six)
+    if len(stage_eight) > 0:
+        stage_eight = process_report_stage_info(stage_eight)
+    return render(request, 'sport_home.html', {
+        'stage_four': stage_four,
+        'stage_six': stage_six,
+        'stage_eight': stage_eight
+    })
 
 
 def coach_home(request):
@@ -561,7 +867,7 @@ def sport_game_analyse(request):
             shoot_reports.append(report)
 
             shake_info = {}
-            shoot_grades = shoot_grade.objects.filter(report_id=id)
+            shoot_grades = shoot_grade.objects.filter(report_id=id).order_by('grade_detail_time')
             heart_temp = []
             heart_total = 0
             shake_info['x_pos'] = []
@@ -601,11 +907,12 @@ def sport_game_analyse(request):
                 heart = 0
             hearts.append(heart)
             if report.x_shake_pos is not None and report.x_up_shake_pos is not None:
-                x_shake_data, y_shake_data, x_up_shake_data, y_up_shake_data = process_shake_pos_info(
-                    report.x_shake_pos,
-                    report.y_shake_pos,
-                    report.x_up_shake_pos,
-                    report.y_up_shake_pos)
+                y_shake_pos = report.y_shake_pos.split(",")
+                x_up_shake_pos = report.x_up_shake_pos.split(",")
+                y_up_shake_pos = report.y_up_shake_pos.split(",")
+                y_shake_data = process_shake_pos_info(y_shake_pos)
+                x_up_shake_data = process_shake_pos_info(x_up_shake_pos)
+                y_up_shake_data = process_shake_pos_info(y_up_shake_pos)
                 is_insert = False
                 y_data = y_shake_data.split(",")
                 x_up_data = x_up_shake_data.split(",")
@@ -627,10 +934,10 @@ def sport_game_analyse(request):
 
                 y_shoot_pos, y_pos_array = shake_get_plus_shoot_point(y_data_plus, nums, is_insert=is_insert)
                 x_shoot_pos, x_pos_array = shake_get_plus_shoot_point(x_up_data_plus, nums,
-                                                                      is_insert=is_insert)
+                                                                               is_insert=is_insert)
                 x_up_shoot_pos, _ = shake_get_plus_shoot_point(x_up_data_plus, up_nums, is_insert=is_insert)
                 up_x_10_pos, up_shake_rate = get_up_shoot_limit(x_up_shoot_pos, shake_info['x_pos'],
-                                                                shake_info['grades'])
+                                                                         shake_info['grades'])
 
                 shake_info['y_data_plus'] = y_data_plus
                 shake_info['x_up_data_plus'] = x_up_data_plus
@@ -639,7 +946,7 @@ def sport_game_analyse(request):
                 shake_info['up_shake_rate'] = up_shake_rate
             report_shake_info.append(shake_info)
         average_grade = round(total_grade / report_num, 2)
-    # average_in_circle = shootlib.get_average_in_circle(x_pos, y_pos)
+    # average_in_circle = get_average_in_circle(x_pos, y_pos)
     # print(average_in_circle)
     grade_stability = get_grade_stability(x_pos, y_pos)
     grade_info = dict(grades=grades, r_pos=r_pos, p_pos=p_pos, hearts=hearts, grade_stability=grade_stability)
@@ -682,32 +989,44 @@ def sport_game_analyse_id(request):
         hearts.append(grade.heart_rate)
     grade_stability = get_grade_stability(x_pos, y_pos)
     grade_info = dict(r_pos=r_pos, p_pos=p_pos, x_pos=x_pos, y_pos=y_pos, grades=grades, hearts=hearts,
-                      grade_stability=grade_stability)
-
+                      rapid_data=rapid_data, grade_stability=grade_stability)
+    stage = int(report.remark)
     shake_info = {}
     five_pos_info = {}
     x_data_pos = report.x_shake_pos
     y_data_pos = report.y_shake_pos
     x_up_data_pos = report.x_up_shake_pos
     y_up_data_pos = report.y_up_shake_pos
+    x_shake_data = report.x_shake_data
+    y_shake_data = report.y_shake_data
+    x_up_shake_data = report.x_up_shake_data
+    y_up_shake_data = report.y_up_shake_data
 
     nums = []
     if report.x_shake_pos is not None and report.x_up_shake_pos is not None:
-        x_shake_data, y_shake_data, x_up_shake_data, y_up_shake_data = process_shake_pos_info(
-            report.x_shake_pos,
-            report.y_shake_pos,
-            report.x_up_shake_pos,
-            report.y_up_shake_pos)
-        is_insert = True
-        x_data = x_shake_data.split(",")
-        y_data = y_shake_data.split(",")
-        x_up_data = x_up_shake_data.split(",")
-        y_up_data = y_up_shake_data.split(",")
-
         x_data_pos = x_data_pos.split(",")
         y_data_pos = y_data_pos.split(",")
         x_up_data_pos = x_up_data_pos.split(",")
         y_up_data_pos = y_up_data_pos.split(",")
+
+        x_shake_data = process_shake_pos_info(x_data_pos)
+        y_shake_data = process_shake_pos_info(y_data_pos)
+        x_up_shake_data = process_shake_pos_info(x_up_data_pos)
+        y_up_shake_data = process_shake_pos_info(y_up_data_pos)
+
+        is_insert = True
+        if stage == 4:
+            pos_num = 8
+        elif stage == 6:
+            pos_num = 10
+        else:
+            pos_num = 15
+        after_shoot = 1
+
+        x_data = x_shake_data.split(",")
+        y_data = y_shake_data.split(",")
+        x_up_data = x_up_shake_data.split(",")
+        y_up_data = y_up_shake_data.split(",")
 
         x_data = get_int_data(x_data)
         y_data = get_int_data(y_data, is_negative=True)
@@ -729,8 +1048,8 @@ def sport_game_analyse_id(request):
         x_up_data_pos = x_up_data_pos[num:]
         y_up_data_pos = y_up_data_pos[num:]
 
-        nums = get_shoot_point(y_data, is_insert=is_insert)
-        up_nums = get_shoot_point(y_up_data, is_insert=is_insert, limit=5)
+        nums, y_shoot_array = get_shoot_point(y_data, is_insert=is_insert, stage=stage)
+        up_nums, x_shoot_array = get_shoot_point(y_up_data, is_insert=is_insert, limit=5, stage=stage)
         # print(nums)
         # print(up_nums)
 
@@ -743,25 +1062,43 @@ def sport_game_analyse_id(request):
         x_up_data_plus = shake_data_process(x_up_data)
         y_up_data_plus = shake_data_process(y_up_data, is_negative=True)
 
-        y_shoot_pos, y_pos_array = shake_get_plus_shoot_point(y_data_plus, nums, is_insert=is_insert)
-        x_shoot_pos, x_pos_array = shake_get_plus_shoot_point(x_up_data_plus, nums, is_insert=is_insert)
+        y_shoot_pos, y_pos_array = shake_get_plus_shoot_point(y_data_plus, nums, is_insert, pos_num,
+                                                                       after_shoot)
+        x_shoot_pos, x_pos_array = shake_get_plus_shoot_point(x_up_data_plus, nums, is_insert, pos_num,
+                                                                       after_shoot)
+        # print(x_pos_array)
+        # print(y_pos_array)
 
-        x_up_shoot_pos, _ = shake_get_plus_shoot_point(x_up_data_plus, up_nums, is_insert=is_insert)
-        y_up_shoot_pos, _ = shake_get_plus_shoot_point(y_up_data_plus, up_nums, is_insert=is_insert)
+        x_up_shoot_pos, _ = shake_get_plus_shoot_point(x_up_data_plus, up_nums, is_insert, pos_num,
+                                                                after_shoot)
+        y_up_shoot_pos, _ = shake_get_plus_shoot_point(y_up_data_plus, up_nums, is_insert, pos_num,
+                                                                after_shoot)
+
+        y_stability_array = shake_get_stability_shoot_array(y_pos_array, after_shoot, is_insert=is_insert)
 
         up_x_10_pos, up_shake_rate = get_up_shoot_limit(x_up_shoot_pos, x_pos, grades)
         # print(x_up_shoot_pos)
         # print(up_x_10_pos)
-        if up_shake_rate is not None:
+        y_shoot_pos_new = copy.copy(y_shoot_pos)
+        if up_shake_rate is not None and len(y_shoot_pos_new) == 5:
+            y_data_plus, y_shoot_pos_new = process_shoot_y_pos_to_one_line(y_data_plus, y_shoot_array,
+                                                                                    up_shake_rate, y_shoot_pos_new,
+                                                                                    y_pos)
+
             x_pos_str, x_shoot_point = process_pos_array(x_pos_array, x_shoot_pos, x_pos, up_shake_rate)
-            y_pos_str, y_shoot_point, y_pos_average_str = process_pos_array(y_pos_array, y_shoot_pos, y_pos,
-                                                                            up_shake_rate, is_average=True)
+            y_pos_str, y_shoot_point = process_pos_array(y_pos_array, y_shoot_pos, y_pos, up_shake_rate)
+
             five_pos_info['up_shake_rate'] = up_shake_rate
             five_pos_info['x_pos_str'] = x_pos_str
             five_pos_info['y_pos_str'] = y_pos_str
-            five_pos_info['y_pos_average_str'] = y_pos_average_str
+            five_pos_info['y_stability_array'] = y_stability_array
             five_pos_info['x_shoot_point'] = x_shoot_point
             five_pos_info['y_shoot_point'] = y_shoot_point
+        else:
+            return render(request, 'sport_game_analyse_id_backup.html', {
+                'shoot_reports': report,
+                'shoot_info': shoot_grades
+            })
 
         shake_info['x_data_plus'] = x_data_plus
         shake_info['y_data_plus'] = y_data_plus
@@ -778,7 +1115,7 @@ def sport_game_analyse_id(request):
         shake_info['x_up_data_pos'] = x_up_data_pos
         shake_info['y_up_data_pos'] = y_up_data_pos
 
-        shake_info['y_shoot_pos'] = y_shoot_pos
+        shake_info['y_shoot_pos'] = y_shoot_pos_new
         shake_info['x_shoot_pos'] = x_shoot_pos
         shake_info['x_up_shoot_pos'] = x_up_shoot_pos
         shake_info['y_up_shoot_pos'] = y_up_shoot_pos
@@ -787,10 +1124,10 @@ def sport_game_analyse_id(request):
     nums = array_to_str(nums)
     return render(request, 'sport_game_analyse_id.html', {
         'shoot_reports': report,
+        'shoot_info': shoot_grades,
         'grade_info': json.dumps(grade_info),
         'shake_info': json.dumps(shake_info),
         'five_pos_info': json.dumps(five_pos_info),
-        'shoot_info': shoot_grades,
         'beside_y_nums': nums,
     })
 

@@ -142,3 +142,12 @@ class shoot_report(models.Model):
     user_name = models.CharField(max_length=100, default="")
     remark = models.TextField(null=True)
 
+
+# 用于存储建立好的模型
+class user_model_info(models.Model):
+    user_name = models.CharField(max_length=100, default="")
+    model_path = models.CharField(max_length=500, default="")
+    build_time = models.CharField(max_length=200, default="")  # 模型建立时间
+    model_type = models.IntegerField(default=0)  # 模型类型
+    model_info = models.TextField(null=True)  # 模型的一些相关信息
+    remark = models.TextField(null=True)

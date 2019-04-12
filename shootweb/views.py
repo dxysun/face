@@ -12,6 +12,7 @@ import numpy as np
 import json
 import datetime
 import copy
+from sklearn import preprocessing
 
 
 # Create your views here.
@@ -567,6 +568,8 @@ def get_average_in_circle(x_pos, y_pos):
 
 
 def get_shoot_stage(report):
+    if report.remark is None:
+        return 8
     return int(report.remark)
 
 
@@ -638,13 +641,18 @@ def get_ring_rate(grades):
     num_9 = 0
     num_8 = 0
     for g in grades:
+        # print g
         if g == 10:
             num_10 += 1
         if g == 9:
             num_9 += 1
         if g == 8:
             num_8 += 1
-    return round(num_10 / len(grades), 2), round(num_9 / len(grades), 2), round(num_8 / len(grades), 2)
+    print num_10
+    print len(grades)
+    print round(num_10 / len(grades), 2)
+    return round(float(num_10) / float(len(grades)), 2), round(float(num_9) / float(len(grades)), 2), round(
+        float(num_8) / float(len(grades)), 2)
 
 
 def process_report_stage_info(stage):
@@ -767,6 +775,11 @@ def sport_home(request):
     stage_four = {}
     stage_six = {}
     stage_eight = {}
+    skills = {}
+    all_grade = 0
+    all_num = 0
+    heart_variance_array = []
+    grades_array = []
     for report in shoot_reports:
         shoot_grades = shoot_grade.objects.filter(report_id=report.id).order_by('grade_detail_time')
         stage = get_shoot_stage(report)
@@ -780,6 +793,7 @@ def sport_home(request):
         heart_six = 0
         heart_eight = 0
         i = 0
+        heart_array = []
         for grade in shoot_grades:
             if stage == 4:
                 heart_four += grade.heart_rate
@@ -791,7 +805,12 @@ def sport_home(request):
                 heart_eight += grade.heart_rate
                 stage_eight = set_report_shoot_rapid_info(stage_eight, grade.grade, grade.rapid_time, i, stage)
             i += 1
-
+            all_grade += int(grade.grade)
+            all_num += 1
+            heart_array.append(grade.heart_rate)
+        heart_variance = get_variance_in_array(heart_array)
+        heart_variance_array.append(heart_variance)
+        grades_array.append(report.total_grade)
         heart_four /= 5
         heart_six /= 5
         heart_eight /= 5
@@ -807,10 +826,24 @@ def sport_home(request):
         stage_six = process_report_stage_info(stage_six)
     if len(stage_eight) > 0:
         stage_eight = process_report_stage_info(stage_eight)
+    user_model = user_model_info.objects.filter(user_name="A")[0]
+    if all_num != 0:
+        skills['grade_level'] = round((all_grade / all_num), 2)
+        heart_variance_array_np = np.array(heart_variance_array).reshape(-1, 1)
+        grades_array_np = np.array(grades_array).reshape(-1, 1)
+        min_max_scaler = preprocessing.MinMaxScaler()
+        heart_min_max = min_max_scaler.fit_transform(heart_variance_array_np)
+        grades_min_max = min_max_scaler.fit_transform(grades_array_np)
+        skills['heart_level'] = round(float(1 - np.mean(heart_min_max)) * 10, 2)
+        # skills['heart_level'] = round((1 - np.sqrt(np.var(heart_min_max))) * 10, 2)
+        skills['stability_level'] = round(float(1 - np.sqrt(np.var(grades_min_max))) * 10, 2)
+
     return render(request, 'sport_home.html', {
         'stage_four': stage_four,
         'stage_six': stage_six,
-        'stage_eight': stage_eight
+        'stage_eight': stage_eight,
+        'model_info': user_model.model_info,
+        'skills': json.dumps(skills),
     })
 
 
@@ -934,10 +967,10 @@ def sport_game_analyse(request):
 
                 y_shoot_pos, y_pos_array = shake_get_plus_shoot_point(y_data_plus, nums, is_insert=is_insert)
                 x_shoot_pos, x_pos_array = shake_get_plus_shoot_point(x_up_data_plus, nums,
-                                                                               is_insert=is_insert)
+                                                                      is_insert=is_insert)
                 x_up_shoot_pos, _ = shake_get_plus_shoot_point(x_up_data_plus, up_nums, is_insert=is_insert)
                 up_x_10_pos, up_shake_rate = get_up_shoot_limit(x_up_shoot_pos, shake_info['x_pos'],
-                                                                         shake_info['grades'])
+                                                                shake_info['grades'])
 
                 shake_info['y_data_plus'] = y_data_plus
                 shake_info['x_up_data_plus'] = x_up_data_plus
@@ -1063,16 +1096,16 @@ def sport_game_analyse_id(request):
         y_up_data_plus = shake_data_process(y_up_data, is_negative=True)
 
         y_shoot_pos, y_pos_array = shake_get_plus_shoot_point(y_data_plus, nums, is_insert, pos_num,
-                                                                       after_shoot)
+                                                              after_shoot)
         x_shoot_pos, x_pos_array = shake_get_plus_shoot_point(x_up_data_plus, nums, is_insert, pos_num,
-                                                                       after_shoot)
+                                                              after_shoot)
         # print(x_pos_array)
         # print(y_pos_array)
 
         x_up_shoot_pos, _ = shake_get_plus_shoot_point(x_up_data_plus, up_nums, is_insert, pos_num,
-                                                                after_shoot)
+                                                       after_shoot)
         y_up_shoot_pos, _ = shake_get_plus_shoot_point(y_up_data_plus, up_nums, is_insert, pos_num,
-                                                                after_shoot)
+                                                       after_shoot)
 
         y_stability_array = shake_get_stability_shoot_array(y_pos_array, after_shoot, is_insert=is_insert)
 
@@ -1082,8 +1115,8 @@ def sport_game_analyse_id(request):
         y_shoot_pos_new = copy.copy(y_shoot_pos)
         if up_shake_rate is not None and len(y_shoot_pos_new) == 5:
             y_data_plus, y_shoot_pos_new = process_shoot_y_pos_to_one_line(y_data_plus, y_shoot_array,
-                                                                                    up_shake_rate, y_shoot_pos_new,
-                                                                                    y_pos)
+                                                                           up_shake_rate, y_shoot_pos_new,
+                                                                           y_pos)
 
             x_pos_str, x_shoot_point = process_pos_array(x_pos_array, x_shoot_pos, x_pos, up_shake_rate)
             y_pos_str, y_shoot_point = process_pos_array(y_pos_array, y_shoot_pos, y_pos, up_shake_rate)
@@ -1095,9 +1128,20 @@ def sport_game_analyse_id(request):
             five_pos_info['x_shoot_point'] = x_shoot_point
             five_pos_info['y_shoot_point'] = y_shoot_point
         else:
+            shake_info['x_data_plus'] = x_data_plus
+            shake_info['y_data_plus'] = y_data_plus
+            shake_info['x_data_ori'] = x_data
+            shake_info['y_data_ori'] = y_data
+
+            shake_info['x_up_data_plus'] = x_up_data_plus
+            shake_info['x_up_data_ori'] = x_up_data
+            shake_info['y_up_data_plus'] = y_up_data_plus
+            shake_info['y_up_data_ori'] = y_up_data
             return render(request, 'sport_game_analyse_id_backup.html', {
                 'shoot_reports': report,
-                'shoot_info': shoot_grades
+                'shoot_info': shoot_grades,
+                'grade_info': json.dumps(grade_info),
+                'shake_info': shake_info
             })
 
         shake_info['x_data_plus'] = x_data_plus

@@ -3,13 +3,155 @@
 {% block title %}运动员数据分析-运动员主页{% endblock %}
 
 {% block script %}
-    <script src="/static/assets/js/pages/sport_home.js"></script>
+   <script>
+   $(function () {
+    var data1 = [];
+
+    var data_grade = [];
+    var data_index = [];
+    for (var i = 0; i < 60; i++) {
+        data1.push([(10 - Math.random() * 5).toFixed(1), (Math.random() * 360).toFixed(1)]);
+        data_grade.push((10 - Math.random() * 5).toFixed(1));
+        data_index.push(i + 1);
+
+    }
+    var model_info = {{ model_info|safe }};
+    var skills = {{ skills|safe }};
+//    console.log(model_info);
+    var heart_rate = model_info.heart_rate.toFixed(3) * 10;
+    var y_stability = model_info.y_stability.toFixed(3) * 10;
+    var x_average = model_info.x_average.toFixed(3) * 10;
+    var rapid_diff = model_info.rapid_diff.toFixed(3) * 10;
+    var option_relationship = {
+        title: {
+            textStyle: {
+                fontSize: 34,
+                fontStyle: 'normal',
+                fontWeight: 'normal'
+            },
+            text: '成绩与其他因素关系图',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                dataView: {
+                    show: true,
+                    readOnly: true
+                },
+                magicType: {
+                    show: true,
+                    type: ['line', 'bar']
+                },
+                restore: {
+                    show: true
+                },
+                saveAsImage: {
+                    show: true
+                }
+            }
+        },
+        calculable: false,
+        xAxis: [{
+            type: 'category',
+            name: '相关因素',
+            axisLabel: {
+                interval: 0
+            },
+            data: ['瞄准稳定性', '射击移动稳定性', '速射时间','心率']
+
+        }],
+        yAxis: [{
+            type: 'value',
+            name: '相关系数'
+        }],
+        series: [{
+            name: '相关系数',
+            type: 'bar',
+            data: [y_stability.toFixed(2),x_average.toFixed(2),rapid_diff.toFixed(2), heart_rate.toFixed(2)],
+            markPoint: {
+                data: [{
+                    type: 'max',
+                    name: '最大值'
+                }, {
+                    type: 'min',
+                    name: '最小值'
+                }]
+            }
+
+        }
+        ]
+    };
+
+    var radar_option_attention = {
+        title: {
+            text: '技能图'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            x: 'center',
+            data: ['技能点']
+        },
+        radar: {
+            indicator: [{
+                text: '成绩稳定性',
+                max: 10
+            },
+                {
+                    text: '成绩水平',
+                    max: 10
+                },
+                {
+                    text: '心态',
+                    max: 10
+                }
+
+            ],
+            center: ['50%', '50%'],
+            radius: 130
+        },
+        series: {
+            type: 'radar',
+            tooltip: {
+                trigger: 'item'
+            },
+            itemStyle: {
+                normal: {
+                    areaStyle: {
+                        type: 'default'
+                    }
+                }
+            },
+            data: [{
+                value: [skills.stability_level, skills.grade_level, skills.heart_level],
+                name: '技能点'
+            }]
+        }
+    };
+
+    var myRelationship = echarts.init(document.getElementById('relationship'));
+    var myAttention = echarts.init(document.getElementById('attention'));
+
+
+    myRelationship.setOption(option_relationship);
+    myAttention.setOption(radar_option_attention);
+
+});
+   </script>
 {% endblock %}
 {% block menu %}
 
     <ul class="nav" id="main-menu">
         <li>
-            <a class="active-menu" href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主界面</a>
+            <a class="active-menu" href="{% url 'sport_home' %}"><i class="fa fa-dashboard"></i> 主页</a>
         </li>
         {% comment %}       <li>
             <a href="{% url 'sport_game_analyse' %}"><i class="fa fa-desktop"></i> 射击数据分析</a>
@@ -25,7 +167,7 @@
 {% block header %}
 
     <h1 class="page-header">
-        主页面
+        主页
     </h1>
     <ol class="breadcrumb">
         <li class="active">数据整体分析结果</li>
@@ -104,6 +246,10 @@
                 </div>
                 <div class="panel-body">
                     <div id="relationship" style="width: 100%;height:500%;"></div>
+                    射击移动稳定性：射击运动员在射击点附近的水平方向移动变化，射击移动稳定性越低，则说明运动员在射击点附近水平移动的越稳，反之，则运动员水平移动的不稳。
+                    <br>
+                    <br>
+                    瞄准稳定性：射击运动员在射击点附近的垂直方向移动变化，瞄准稳定性越低，则说明运动员在射击点附近持枪的越稳，反之，则运动员持枪不稳。
                 </div>
             </div>
         </div>

@@ -13,6 +13,8 @@ class SimpleMiddleware(MiddlewareMixin):
         #     return redirect("login")
         if 'face' in request.path:
             pass
+        if 'mine' in request.path:
+            pass
         elif request.path != '/shoot/login' and request.path != '/shoot/login_admin':
             user = request.session.get('user', None)
             if user:
